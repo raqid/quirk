@@ -43,19 +43,19 @@ export async function presignUpload({ filename, content_type, type }) {
   return data;
 }
 
-export function uploadToR2(uploadUrl, file, onProgress) {
+export function uploadToR2(uploadUrl, fileUri, contentType, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', uploadUrl);
-    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.setRequestHeader('Content-Type', contentType || 'application/octet-stream');
     if (onProgress) {
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) onProgress(e.loaded / e.total);
       };
     }
-    xhr.onload = () => (xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
+    xhr.onload  = () => (xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
     xhr.onerror = () => reject(new Error('Network error during upload'));
-    xhr.send(file);
+    xhr.send({ uri: fileUri });
   });
 }
 
@@ -80,10 +80,15 @@ export async function deleteUpload(id) {
 }
 
 export async function uploadAsset({ asset, type, category, description, task_id, language, onProgress }) {
-  const presign = await presignUpload({ filename: asset.fileName || 'upload', content_type: asset.mimeType || 'application/octet-stream', type });
+  const filename     = asset.fileName || `upload-${Date.now()}.${type === 'photo' ? 'jpg' : type === 'video' ? 'mp4' : 'm4a'}`;
+  const content_type = asset.mimeType || (type === 'photo' ? 'image/jpeg' : type === 'video' ? 'video/mp4' : 'audio/m4a');
+
+  const presign = await presignUpload({ filename, content_type, type });
   onProgress?.(0.1);
-  await uploadToR2(presign.upload_url, asset, (p) => onProgress?.(0.1 + p * 0.7));
+
+  await uploadToR2(presign.upload_url, asset.uri, content_type, (p) => onProgress?.(0.1 + p * 0.7));
   onProgress?.(0.85);
+
   const result = await completeUpload({ key: presign.key, type, category, description, task_id, language });
   onProgress?.(1.0);
   return result;
@@ -97,6 +102,11 @@ export async function fetchTasks(params = {}) {
 
 export async function fetchTask(id) {
   const { data } = await api.get(`/tasks/${id}`);
+  return data;
+}
+
+export async function fetchTaskCategories() {
+  const { data } = await api.get('/tasks/categories');
   return data;
 }
 
@@ -151,6 +161,17 @@ export async function updateProfile(updates) {
 
 export async function updatePayoutMethod({ type, details }) {
   const { data } = await api.patch('/profile/payout-method', { type, details });
+  return data;
+}
+
+export async function savePushToken(token) {
+  const { data } = await api.post('/profile/push-token', { token });
+  return data;
+}
+
+// ── Leaderboard ───────────────────────────────
+export async function fetchLeaderboard(period = 'all') {
+  const { data } = await api.get('/profile/leaderboard', { params: { period } });
   return data;
 }
 

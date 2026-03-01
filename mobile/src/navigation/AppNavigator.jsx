@@ -9,10 +9,13 @@ import TasksScreen from '../screens/TasksScreen';
 import RoyaltiesScreen from '../screens/RoyaltiesScreen';
 import WalletScreen from '../screens/WalletScreen';
 
-import TaskDetailScreen from '../screens/TaskDetailScreen';
-import AssetDetailScreen from '../screens/AssetDetailScreen';
+import TaskDetailScreen     from '../screens/TaskDetailScreen';
+import AssetDetailScreen    from '../screens/AssetDetailScreen';
 import UploadMetadataScreen from '../screens/UploadMetadataScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import ProfileScreen        from '../screens/ProfileScreen';
+import NotificationsScreen  from '../screens/NotificationsScreen';
+import LeaderboardScreen    from '../screens/LeaderboardScreen';
+import SettingsScreen       from '../screens/SettingsScreen';
 
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -21,11 +24,11 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 const TABS = [
-  { name: 'Home',      icon: '⌂',  screen: HomeScreen      },
-  { name: 'Capture',   icon: '+',   screen: CaptureScreen,  fab: true },
-  { name: 'Tasks',     icon: '✓',  screen: TasksScreen     },
-  { name: 'Earn',      icon: '$',   screen: RoyaltiesScreen },
-  { name: 'Wallet',    icon: '◈',  screen: WalletScreen    },
+  { name: 'Home',    icon: '⌂',  screen: HomeScreen      },
+  { name: 'Tasks',   icon: '✓', screen: TasksScreen     },
+  { name: 'Capture', icon: '+',  screen: CaptureScreen,  fab: true },
+  { name: 'Earn',    icon: '$',  screen: RoyaltiesScreen },
+  { name: 'Wallet',  icon: '◈', screen: WalletScreen    },
 ];
 
 function CustomTabBar({ state, descriptors, navigation }) {
@@ -78,6 +81,9 @@ export default function AppNavigator() {
       <Stack.Screen name="AssetDetail"    component={AssetDetailScreen}   />
       <Stack.Screen name="UploadMetadata" component={UploadMetadataScreen}/>
       <Stack.Screen name="ProfileScreen"  component={ProfileScreen}       />
+      <Stack.Screen name="Notifications"  component={NotificationsScreen} />
+      <Stack.Screen name="Leaderboard"    component={LeaderboardScreen}   />
+      <Stack.Screen name="Settings"       component={SettingsScreen}      />
     </Stack.Navigator>
   );
 }
