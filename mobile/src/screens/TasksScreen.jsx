@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TextInput, TouchableOpacity, RefreshControl,
@@ -8,24 +8,35 @@ import EmptyState from '../components/EmptyState';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
-import { mockTasks } from '../mocks/mockData';
+import { fetchTasks } from '../services/api';
 
 const FILTERS = ['All', 'Photo', 'Video', 'Audio'];
 
 export default function TasksScreen({ navigation }) {
+  const [tasks, setTasks] = useState([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
 
-  const filtered = mockTasks.filter((t) => {
+  const loadTasks = async () => {
+    try {
+      const res = await fetchTasks({ status: 'active' });
+      setTasks(res?.tasks || res || []);
+    } catch {}
+  };
+
+  useEffect(() => { loadTasks(); }, []);
+
+  const filtered = tasks.filter((t) => {
     const matchType = filter === 'All' || t.data_type === filter.toLowerCase();
     const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase());
     return matchType && matchSearch;
   });
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
+    await loadTasks();
+    setRefreshing(false);
   };
 
   return (

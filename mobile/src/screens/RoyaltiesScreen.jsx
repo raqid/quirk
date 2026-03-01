@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TouchableOpacity, RefreshControl,
@@ -6,7 +6,7 @@ import {
 import RoyaltyEvent from '../components/RoyaltyEvent';
 import EmptyState from '../components/EmptyState';
 import { formatCurrency } from '../utils/formatting';
-import { mockRoyaltyEvents, mockRoyaltySummary, mockWallet } from '../mocks/mockData';
+import { fetchRoyalties, fetchRoyaltySummary } from '../services/api';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -23,21 +23,37 @@ function isThisWeek(dateStr) {
   return Date.now() - new Date(dateStr).getTime() < 7 * 86400000;
 }
 
-export default function RoyaltiesScreen({ navigation }) {
+export default function RoyaltiesScreen() {
+  const [events, setEvents] = useState([]);
+  const [summary, setSummary] = useState({ total_royalties: 0, total_uses: 0, this_month: 0, companies_count: 0 });
   const [period, setPeriod] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
 
-  const filtered = mockRoyaltyEvents.filter((e) => {
+  const loadData = async () => {
+    try {
+      const [eventsRes, summaryRes] = await Promise.allSettled([
+        fetchRoyalties({ limit: 50 }),
+        fetchRoyaltySummary(),
+      ]);
+      if (eventsRes.status === 'fulfilled') setEvents(eventsRes.value?.events || []);
+      if (summaryRes.status === 'fulfilled') setSummary(summaryRes.value);
+    } catch {}
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const filtered = events.filter((e) => {
     if (period === 'This month') return isThisMonth(e.created_at);
     if (period === 'This week') return isThisWeek(e.created_at);
     return true;
   });
 
-  const periodTotal = filtered.reduce((sum, e) => sum + e.amount, 0);
+  const periodTotal = filtered.reduce((sum, e) => sum + Number(e.amount), 0);
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
+    await loadData();
+    setRefreshing(false);
   };
 
   return (
@@ -52,23 +68,21 @@ export default function RoyaltiesScreen({ navigation }) {
         {/* Summary card */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Total Royalties</Text>
-          <Text style={styles.summaryAmount}>
-            {formatCurrency(mockWallet.total_royalties)}
-          </Text>
+          <Text style={styles.summaryAmount}>{formatCurrency(summary.total_royalties)}</Text>
 
           <View style={styles.summaryStats}>
             <View style={styles.sumStat}>
-              <Text style={styles.sumStatValue}>{mockRoyaltySummary.total_uses}</Text>
+              <Text style={styles.sumStatValue}>{summary.total_uses}</Text>
               <Text style={styles.sumStatLabel}>Times used</Text>
             </View>
             <View style={styles.sumStatDivider} />
             <View style={styles.sumStat}>
-              <Text style={styles.sumStatValue}>{mockRoyaltySummary.companies_count}</Text>
+              <Text style={styles.sumStatValue}>{summary.companies_count}</Text>
               <Text style={styles.sumStatLabel}>Companies</Text>
             </View>
             <View style={styles.sumStatDivider} />
             <View style={styles.sumStat}>
-              <Text style={styles.sumStatValue}>{formatCurrency(mockRoyaltySummary.this_month)}</Text>
+              <Text style={styles.sumStatValue}>{formatCurrency(summary.this_month)}</Text>
               <Text style={styles.sumStatLabel}>This month</Text>
             </View>
           </View>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TouchableOpacity, RefreshControl, Alert,
@@ -8,35 +8,76 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { formatCurrency, formatRelativeTime } from '../utils/formatting';
-import { mockWallet, mockTransactions } from '../mocks/mockData';
+import { fetchWallet, fetchTransactions, requestWithdrawal } from '../services/api';
 
 const TX_ICONS = { royalty: '💸', upfront_payment: '✅', payout: '🏦', referral_bonus: '👥', bonus: '🎁' };
 
+const EMPTY_WALLET = { available_balance: 0, pending_balance: 0, total_earned: 0, total_royalties: 0, total_withdrawn: 0, payout_method: null };
+
 export default function WalletScreen() {
+  const [wallet, setWallet] = useState(EMPTY_WALLET);
+  const [transactions, setTransactions] = useState([]);
+  const [totalTx, setTotalTx] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const displayedTx = showAll ? mockTransactions : mockTransactions.slice(0, 8);
+  const loadData = async () => {
+    try {
+      const [walletRes, txRes] = await Promise.allSettled([
+        fetchWallet(),
+        fetchTransactions({ limit: 8 }),
+      ]);
+      if (walletRes.status === 'fulfilled') setWallet(walletRes.value || EMPTY_WALLET);
+      if (txRes.status === 'fulfilled') {
+        setTransactions(txRes.value?.transactions || []);
+        setTotalTx(txRes.value?.total || 0);
+      }
+    } catch {}
+  };
 
-  const onRefresh = () => {
+  useEffect(() => { loadData(); }, []);
+
+  const loadAll = async () => {
+    try {
+      const res = await fetchTransactions({ limit: 100 });
+      setTransactions(res?.transactions || []);
+    } catch {}
+  };
+
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
+    await loadData();
+    setRefreshing(false);
   };
 
   const handleWithdraw = () => {
-    if (mockWallet.available_balance < 10) {
+    const balance = Number(wallet.available_balance);
+    if (balance < 10) {
       Alert.alert('Minimum not met', 'You need at least $10 to withdraw.');
       return;
     }
     Alert.alert(
       'Withdraw Funds',
-      `Send ${formatCurrency(mockWallet.available_balance)} to your ${mockWallet.payout_method.type}?`,
+      `Send ${formatCurrency(balance)} to your ${wallet.payout_method || 'account'}?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Withdraw', onPress: () => Alert.alert('Requested', 'Your payout is being processed.') },
+        {
+          text: 'Withdraw',
+          onPress: async () => {
+            try {
+              await requestWithdrawal(balance);
+              Alert.alert('Requested', 'Your payout is being processed.');
+              loadData();
+            } catch (e) {
+              Alert.alert('Error', e.response?.data?.error || 'Could not process withdrawal.');
+            }
+          },
+        },
       ]
     );
   };
+
+  const displayedTx = showAll ? transactions : transactions.slice(0, 8);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -50,33 +91,33 @@ export default function WalletScreen() {
         {/* Balance card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Available balance</Text>
-          <Text style={styles.balanceAmount}>{formatCurrency(mockWallet.available_balance)}</Text>
+          <Text style={styles.balanceAmount}>{formatCurrency(wallet.available_balance)}</Text>
           <Button
             title="Withdraw Funds"
             onPress={handleWithdraw}
-            disabled={mockWallet.available_balance < 10}
+            disabled={Number(wallet.available_balance) < 10}
             style={styles.withdrawBtn}
           />
           <View style={styles.pendingRow}>
             <Text style={styles.pendingLabel}>Pending</Text>
-            <Text style={styles.pendingValue}>{formatCurrency(mockWallet.pending_balance)}</Text>
+            <Text style={styles.pendingValue}>{formatCurrency(wallet.pending_balance)}</Text>
           </View>
         </View>
 
         {/* Lifetime stats */}
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatCurrency(mockWallet.total_earned)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(wallet.total_earned)}</Text>
             <Text style={styles.statLabel}>Lifetime earned</Text>
           </View>
           <View style={styles.statDiv} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatCurrency(mockWallet.total_royalties)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(wallet.total_royalties)}</Text>
             <Text style={styles.statLabel}>From royalties</Text>
           </View>
           <View style={styles.statDiv} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatCurrency(mockWallet.total_withdrawn)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(wallet.total_withdrawn)}</Text>
             <Text style={styles.statLabel}>Withdrawn</Text>
           </View>
         </View>
@@ -84,23 +125,31 @@ export default function WalletScreen() {
         {/* Transactions */}
         <Text style={styles.txTitle}>Transaction History</Text>
         <View style={styles.txList}>
-          {displayedTx.map((tx) => (
+          {displayedTx.length === 0 ? (
+            <Text style={{ ...typography.body, color: colors.textTertiary, textAlign: 'center', paddingVertical: spacing.md }}>No transactions yet.</Text>
+          ) : displayedTx.map((tx) => (
             <View key={tx.id} style={styles.txRow}>
               <Text style={styles.txIcon}>{TX_ICONS[tx.type] || '•'}</Text>
               <View style={styles.txInfo}>
                 <Text style={styles.txDesc} numberOfLines={1}>{tx.description}</Text>
                 <Text style={styles.txTime}>{formatRelativeTime(tx.created_at)}</Text>
               </View>
-              <Text style={[styles.txAmount, tx.amount < 0 && styles.txAmountNeg]}>
-                {tx.amount < 0 ? '-' : '+'}{formatCurrency(Math.abs(tx.amount))}
+              <Text style={[styles.txAmount, Number(tx.amount) < 0 && styles.txAmountNeg]}>
+                {Number(tx.amount) < 0 ? '-' : '+'}{formatCurrency(Math.abs(Number(tx.amount)))}
               </Text>
             </View>
           ))}
         </View>
 
-        {mockTransactions.length > 8 && (
-          <TouchableOpacity style={styles.showAllBtn} onPress={() => setShowAll(!showAll)}>
-            <Text style={styles.showAllText}>{showAll ? 'Show less' : `Show all ${mockTransactions.length} transactions`}</Text>
+        {totalTx > 8 && (
+          <TouchableOpacity
+            style={styles.showAllBtn}
+            onPress={() => {
+              if (!showAll) loadAll();
+              setShowAll(!showAll);
+            }}
+          >
+            <Text style={styles.showAllText}>{showAll ? 'Show less' : `Show all ${totalTx} transactions`}</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

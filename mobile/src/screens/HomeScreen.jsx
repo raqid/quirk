@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  ScrollView, TouchableOpacity, RefreshControl,
+  ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import PortfolioCard from '../components/PortfolioCard';
 import TaskCard from '../components/TaskCard';
@@ -10,7 +10,7 @@ import NotificationBanner from '../components/NotificationBanner';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
-import { mockUser, mockPortfolio, mockTasks, mockRoyaltyEvents, mockNotifications } from '../mocks/mockData';
+import { fetchProfile, fetchPortfolio, fetchTasks, fetchRoyalties, fetchNotifications } from '../services/api';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -19,15 +19,61 @@ function getGreeting() {
   return 'Good evening';
 }
 
-export default function HomeScreen({ navigation }) {
-  const unread = mockNotifications.filter((n) => !n.read);
-  const [dismissedBanner, setDismissedBanner] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+const EMPTY_PORTFOLIO = {
+  total_earned: 0, royalties_this_month: 0, royalties_last_month: 0,
+  trend_percent: 0, trend_direction: 'up',
+  photos: { count: 0, monthly_royalties: 0 },
+  videos: { count: 0, monthly_royalties: 0 },
+  audio:  { count: 0, monthly_royalties: 0 },
+};
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
+export default function HomeScreen({ navigation }) {
+  const [profile, setProfile] = useState(null);
+  const [portfolio, setPortfolio] = useState(EMPTY_PORTFOLIO);
+  const [tasks, setTasks] = useState([]);
+  const [royalties, setRoyalties] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [dismissedBanner, setDismissedBanner] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [prof, port, tasksRes, royRes, notifRes] = await Promise.allSettled([
+        fetchProfile(),
+        fetchPortfolio(),
+        fetchTasks({ status: 'active', limit: 3 }),
+        fetchRoyalties({ limit: 5 }),
+        fetchNotifications({ unread: true, limit: 5 }),
+      ]);
+      if (prof.status === 'fulfilled') setProfile(prof.value);
+      if (port.status === 'fulfilled') setPortfolio(port.value);
+      if (tasksRes.status === 'fulfilled') setTasks(tasksRes.value?.tasks || tasksRes.value || []);
+      if (royRes.status === 'fulfilled') setRoyalties(royRes.value?.events || []);
+      if (notifRes.status === 'fulfilled') setNotifications(notifRes.value?.notifications || []);
+    } catch {}
   };
+
+  useEffect(() => {
+    loadData().finally(() => setLoading(false));
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
+  const unread = notifications.filter((n) => !n.read);
+  const displayName = profile?.display_name || 'there';
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ActivityIndicator color={colors.primary} style={{ flex: 1 }} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -40,13 +86,13 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.name}>{mockUser.display_name.split(' ')[0]}</Text>
+            <Text style={styles.name}>{displayName.split(' ')[0]}</Text>
           </View>
           <TouchableOpacity
             style={styles.avatar}
             onPress={() => navigation.navigate('ProfileScreen')}
           >
-            <Text style={styles.avatarText}>{mockUser.display_name.charAt(0)}</Text>
+            <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
             {unread.length > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{unread.length}</Text></View>}
           </TouchableOpacity>
         </View>
@@ -60,7 +106,7 @@ export default function HomeScreen({ navigation }) {
         )}
 
         {/* Portfolio */}
-        <PortfolioCard portfolio={mockPortfolio} />
+        <PortfolioCard portfolio={portfolio} />
 
         {/* Active tasks */}
         <View style={styles.section}>
@@ -70,24 +116,29 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.seeAll}>See all →</Text>
             </TouchableOpacity>
           </View>
-          {mockTasks.slice(0, 3).map((task) => (
+          {tasks.slice(0, 3).map((task) => (
             <TaskCard
               key={task.id}
               task={task}
               onPress={() => navigation.navigate('TaskDetail', { taskId: task.id })}
             />
           ))}
+          {tasks.length === 0 && (
+            <Text style={styles.emptyText}>No active tasks right now.</Text>
+          )}
         </View>
 
         {/* Recent royalties */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Royalties</Text>
-          <View style={styles.royaltyCard}>
-            {mockRoyaltyEvents.slice(0, 5).map((event) => (
-              <RoyaltyEvent key={event.id} event={event} />
-            ))}
+        {royalties.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Recent Royalties</Text>
+            <View style={styles.royaltyCard}>
+              {royalties.map((event) => (
+                <RoyaltyEvent key={event.id} event={event} />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Capture CTA */}
         <TouchableOpacity style={styles.captureCta} onPress={() => navigation.navigate('Capture')} activeOpacity={0.85}>
@@ -130,6 +181,7 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
   sectionTitle: { ...typography.body, color: colors.text, fontWeight: '700', marginBottom: spacing.sm },
   seeAll: { ...typography.caption, color: colors.primary },
+  emptyText: { ...typography.body, color: colors.textTertiary, textAlign: 'center', paddingVertical: spacing.md },
   royaltyCard: {
     backgroundColor: colors.surface,
     borderRadius: 14,

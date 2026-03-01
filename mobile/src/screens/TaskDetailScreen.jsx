@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  ScrollView, TouchableOpacity,
+  ScrollView, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import Badge from '../components/Badge';
 import Button from '../components/Button';
@@ -9,18 +9,45 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { formatCurrency, formatDeadline } from '../utils/formatting';
-import { mockTasks } from '../mocks/mockData';
+import { fetchTask } from '../services/api';
 
 const TYPE_ICONS = { photo: '📷', video: '🎥', audio: '🎙️' };
 const DIFFICULTY_COLOR = { easy: 'green', medium: 'amber', hard: 'red' };
 
 export default function TaskDetailScreen({ navigation, route }) {
   const { taskId } = route.params;
-  const task = mockTasks.find((t) => t.id === taskId);
-  if (!task) return null;
+  const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTask(taskId)
+      .then(setTask)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [taskId]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ActivityIndicator color={colors.primary} style={{ flex: 1 }} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!task) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 40 }}>Task not found.</Text>
+      </SafeAreaView>
+    );
+  }
 
   const fill = Math.round((task.quantity_filled / task.quantity_needed) * 100);
   const spotsLeft = task.quantity_needed - task.quantity_filled;
+  const requirements = Array.isArray(task.requirements) ? task.requirements : [];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -67,17 +94,21 @@ export default function TaskDetailScreen({ navigation, route }) {
           <View style={styles.fillBg}>
             <View style={[styles.fillBar, { width: `${fill}%`, backgroundColor: fill >= 80 ? colors.amber : colors.primary }]} />
           </View>
-          <Text style={styles.deadline}>{formatDeadline(task.deadline)}</Text>
+          {task.deadline && <Text style={styles.deadline}>{formatDeadline(task.deadline)}</Text>}
         </View>
 
         {/* Requirements */}
-        <Text style={styles.reqTitle}>Requirements</Text>
-        {task.requirements.map((r, i) => (
-          <View key={i} style={styles.reqRow}>
-            <Text style={styles.reqBullet}>•</Text>
-            <Text style={styles.reqText}>{r}</Text>
-          </View>
-        ))}
+        {requirements.length > 0 && (
+          <>
+            <Text style={styles.reqTitle}>Requirements</Text>
+            {requirements.map((r, i) => (
+              <View key={i} style={styles.reqRow}>
+                <Text style={styles.reqBullet}>•</Text>
+                <Text style={styles.reqText}>{r}</Text>
+              </View>
+            ))}
+          </>
+        )}
 
         {/* User submissions */}
         <View style={styles.myCard}>

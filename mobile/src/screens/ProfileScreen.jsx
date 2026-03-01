@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TouchableOpacity, Alert,
@@ -6,8 +6,9 @@ import {
 import Button from '../components/Button';
 import Badge from '../components/Badge';
 import { formatCurrency } from '../utils/formatting';
-import { mockUser, mockPortfolio, mockReferrals } from '../mocks/mockData';
+import { fetchProfile, fetchProfileStats, fetchReferrals } from '../services/api';
 import { useAuthContext } from '../context/AuthContext';
+import { logout } from '../services/auth';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -25,13 +26,34 @@ const SETTINGS = [
 export default function ProfileScreen({ navigation }) {
   const { setIsAuthenticated } = useAuthContext();
   const [showReferral, setShowReferral] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [stats, setStats] = useState({ total_uploads: 0, total_earned: 0, total_referrals: 0 });
+  const [referrals, setReferrals] = useState(null);
+
+  useEffect(() => {
+    Promise.allSettled([fetchProfile(), fetchProfileStats(), fetchReferrals()]).then(([p, s, r]) => {
+      if (p.status === 'fulfilled') setProfile(p.value);
+      if (s.status === 'fulfilled') setStats(s.value);
+      if (r.status === 'fulfilled') setReferrals(r.value);
+    });
+  }, []);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => setIsAuthenticated(false) },
+      {
+        text: 'Sign Out', style: 'destructive', onPress: async () => {
+          await logout();
+          setIsAuthenticated(false);
+        }
+      },
     ]);
   };
+
+  const displayName = profile?.display_name || 'User';
+  const level = profile?.level || 'bronze';
+  const memberYear = profile?.created_at ? new Date(profile.created_at).getFullYear() : new Date().getFullYear();
+  const referralCode = profile?.referral_code || referrals?.referral_code || '—';
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -45,31 +67,31 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.avatarSection}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarLetter}>{mockUser.display_name.charAt(0)}</Text>
+            <Text style={styles.avatarLetter}>{displayName.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text style={styles.name}>{mockUser.display_name}</Text>
+          <Text style={styles.name}>{displayName}</Text>
           <View style={styles.levelRow}>
-            <Badge label={mockUser.level} color={LEVEL_COLORS[mockUser.level] ?? 'gray'} />
-            <Text style={styles.memberSince}>Member since {new Date(mockUser.member_since).getFullYear()}</Text>
+            <Badge label={level} color={LEVEL_COLORS[level] ?? 'gray'} />
+            <Text style={styles.memberSince}>Member since {memberYear}</Text>
           </View>
-          {mockUser.city && mockUser.country && (
-            <Text style={styles.location}>📍 {mockUser.city}, {mockUser.country}</Text>
+          {profile?.city && profile?.country && (
+            <Text style={styles.location}>📍 {profile.city}, {profile.country}</Text>
           )}
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{mockUser.total_uploads}</Text>
+            <Text style={styles.statValue}>{stats.total_uploads}</Text>
             <Text style={styles.statLabel}>Uploads</Text>
           </View>
           <View style={styles.statDiv} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatCurrency(mockPortfolio.total_earned)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(stats.total_earned)}</Text>
             <Text style={styles.statLabel}>Total earned</Text>
           </View>
           <View style={styles.statDiv} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{mockReferrals?.total_referred ?? 0}</Text>
+            <Text style={styles.statValue}>{stats.total_referrals ?? 0}</Text>
             <Text style={styles.statLabel}>Referrals</Text>
           </View>
         </View>
@@ -85,7 +107,7 @@ export default function ProfileScreen({ navigation }) {
           {showReferral && (
             <View style={styles.referralCode}>
               <Text style={styles.referralCodeLabel}>Your referral code</Text>
-              <Text style={styles.referralCodeValue}>{mockUser.referral_code}</Text>
+              <Text style={styles.referralCodeValue}>{referralCode}</Text>
               <Text style={styles.referralNote}>Share this code with friends. You'll earn 10% of their royalties forever.</Text>
             </View>
           )}

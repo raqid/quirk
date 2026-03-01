@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
+import { updateProfile, updatePayoutMethod } from '../services/api';
 
 const COUNTRIES = [
   'Nigeria','Ghana','Kenya','South Africa','Ethiopia','Tanzania','Uganda','Cameroon',
@@ -22,7 +23,7 @@ const PAYOUT_METHODS = [
   { key: 'bank',   label: 'Bank Transfer', icon: '🏦' },
 ];
 
-export default function OnboardingProfile({ navigation, route }) {
+export default function OnboardingProfile({ navigation }) {
   const [displayName, setDisplayName] = useState('');
   const [country, setCountry] = useState('');
   const [payout, setPayout] = useState('paypal');
@@ -35,8 +36,14 @@ export default function OnboardingProfile({ navigation, route }) {
   const handleContinue = async () => {
     if (!displayName.trim()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 500));
-    setLoading(false);
+    try {
+      await updateProfile({ display_name: displayName.trim(), country });
+      await updatePayoutMethod({ type: payout, details: {} });
+    } catch {
+      // profile can be updated later — continue anyway
+    } finally {
+      setLoading(false);
+    }
     navigation.navigate('Tutorial');
   };
 

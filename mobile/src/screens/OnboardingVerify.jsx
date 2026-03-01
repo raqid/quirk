@@ -7,9 +7,10 @@ import Button from '../components/Button';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
+import { verifyOtp, resendOtp } from '../services/auth';
 
 export default function OnboardingVerify({ navigation, route }) {
-  const { identifier = '', referralCode = '' } = route.params || {};
+  const { identifier = '' } = route.params || {};
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,18 +40,32 @@ export default function OnboardingVerify({ navigation, route }) {
 
   const handleSubmit = async (code) => {
     if (loading) return;
+    const otp = code || digits.join('');
+    if (otp.length < 6) return;
     setLoading(true);
     setError('');
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    navigation.navigate('Profile', { identifier, referralCode });
+    try {
+      await verifyOtp({ identifier, otp_code: otp });
+      navigation.navigate('Profile', { identifier });
+    } catch (e) {
+      setError(e.response?.data?.error || 'Invalid code. Please try again.');
+      setDigits(['', '', '', '', '', '']);
+      refs[0].current?.focus();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (resendCountdown > 0) return;
-    setResendCountdown(60);
-    setDigits(['', '', '', '', '', '']);
-    refs[0].current?.focus();
+    try {
+      await resendOtp({ identifier });
+      setResendCountdown(60);
+      setDigits(['', '', '', '', '', '']);
+      refs[0].current?.focus();
+    } catch (e) {
+      setError(e.response?.data?.error || 'Could not resend code.');
+    }
   };
 
   return (
@@ -63,6 +78,7 @@ export default function OnboardingVerify({ navigation, route }) {
 
         <Text style={styles.heading}>Enter code</Text>
         <Text style={styles.sub}>We sent a 6-digit code to{'\n'}<Text style={styles.identifier}>{identifier}</Text></Text>
+        <Text style={styles.hint}>Tip: check Railway deploy logs to find your OTP until SMS is set up.</Text>
 
         <View style={styles.otpRow}>
           {digits.map((d, i) => (
@@ -106,7 +122,8 @@ const styles = StyleSheet.create({
   back: { marginBottom: spacing.lg },
   backText: { ...typography.body, color: colors.textSecondary },
   heading: { ...typography.heading2, color: colors.text, marginBottom: spacing.xs },
-  sub: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xl, lineHeight: 24 },
+  sub: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xs, lineHeight: 24 },
+  hint: { ...typography.caption, color: colors.textTertiary, marginBottom: spacing.xl, lineHeight: 18 },
   identifier: { color: colors.text, fontWeight: '600' },
   otpRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xl },
   otpBox: {

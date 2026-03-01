@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
+import { register } from '../services/auth';
 
 export default function OnboardingSignup({ navigation }) {
   const [mode, setMode] = useState('phone'); // 'phone' | 'email'
@@ -22,9 +23,14 @@ export default function OnboardingSignup({ navigation }) {
     if (!password.trim() || password.length < 6) { setError('Password must be at least 6 characters'); return; }
     setError('');
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setLoading(false);
-    navigation.navigate('Verify', { identifier: identifier.trim(), referralCode });
+    try {
+      await register({ identifier: identifier.trim(), password, referral_code: referralCode || undefined });
+      navigation.navigate('Verify', { identifier: identifier.trim() });
+    } catch (e) {
+      setError(e.response?.data?.error || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -127,6 +127,12 @@ export async function requestWithdrawal(amount) {
   return data;
 }
 
+// ── Portfolio ─────────────────────────────────
+export async function fetchPortfolio() {
+  const { data } = await api.get('/profile/portfolio');
+  return data;
+}
+
 // ── Profile ───────────────────────────────────
 export async function fetchProfile() {
   const { data } = await api.get('/profile');
