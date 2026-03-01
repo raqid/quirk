@@ -21,6 +21,35 @@ function issueTokens(userId, role = 'user') {
   return { access_token: access, refresh_token: refresh };
 }
 
+async function sendOtp(identifier, otp_code) {
+  const isEmail = identifier.includes('@');
+  console.log(`OTP for ${identifier}: ${otp_code}`);
+
+  if (isEmail && process.env.RESEND_API_KEY) {
+    try {
+      const { Resend } = await import('resend');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'Quirk <onboarding@resend.dev>',
+        to: identifier,
+        subject: `Your Quirk verification code: ${otp_code}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:400px;margin:0 auto;background:#0A0A0A;color:#fff;padding:32px;border-radius:12px">
+            <h2 style="color:#00C060;margin-bottom:8px">Quirk</h2>
+            <p style="color:#aaa;margin-bottom:24px">Your verification code is:</p>
+            <div style="font-size:40px;font-weight:700;letter-spacing:8px;color:#fff;text-align:center;padding:16px;background:#1A1A1A;border-radius:8px;margin-bottom:24px">
+              ${otp_code}
+            </div>
+            <p style="color:#666;font-size:13px">This code expires in 10 minutes. If you didn't request this, ignore this email.</p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      console.error('Resend error:', err.message);
+    }
+  }
+}
+
 // POST /auth/register
 router.post('/register', authLimiter, async (req, res, next) => {
   try {
@@ -37,6 +66,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
     const otp_code = generateOtp();
     const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
     const referral_code_own = uuidv4().slice(0, 8).toUpperCase();
+    const member_since = new Date().toISOString().split('T')[0];
 
     const [user] = await db('users').insert({
       [field]: identifier,
@@ -44,6 +74,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
       otp_code,
       otp_expires_at,
       referral_code: referral_code_own,
+      member_since,
       status: 'pending',
     }).returning('*');
 
@@ -54,8 +85,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
       }
     }
 
-    // In production send OTP via SMS/email
-    console.log(`OTP for ${identifier}: ${otp_code}`);
+    await sendOtp(identifier, otp_code);
     res.status(201).json({ message: 'OTP sent', user_id: user.id });
   } catch (err) {
     next(err);
@@ -81,6 +111,12 @@ router.post('/verify', authLimiter, async (req, res, next) => {
       otp_expires_at: null,
     });
 
+    // Auto-create wallet if not exists
+    const existing = await db('wallets').where({ user_id: user.id }).first();
+    if (!existing) {
+      await db('wallets').insert({ user_id: user.id });
+    }
+
     const tokens = issueTokens(user.id, user.role);
     res.json({ ...tokens, user: { id: user.id, display_name: user.display_name } });
   } catch (err) {
@@ -100,7 +136,7 @@ router.post('/resend', authLimiter, async (req, res, next) => {
     const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
     await db('users').where({ id: user.id }).update({ otp_code, otp_expires_at });
 
-    console.log(`Resent OTP for ${identifier}: ${otp_code}`);
+    await sendOtp(identifier, otp_code);
     res.json({ message: 'OTP resent' });
   } catch (err) {
     next(err);
@@ -119,6 +155,10 @@ router.post('/login', authLimiter, async (req, res, next) => {
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+
+    // Ensure wallet exists for login too
+    const wallet = await db('wallets').where({ user_id: user.id }).first();
+    if (!wallet) await db('wallets').insert({ user_id: user.id });
 
     const tokens = issueTokens(user.id, user.role);
     res.json({ ...tokens, user: { id: user.id, display_name: user.display_name } });

@@ -5,6 +5,7 @@ import OnboardingSignup from '../screens/OnboardingSignup';
 import OnboardingVerify from '../screens/OnboardingVerify';
 import OnboardingProfile from '../screens/OnboardingProfile';
 import OnboardingTutorial from '../screens/OnboardingTutorial';
+import LoginScreen from '../screens/LoginScreen';
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,7 @@ export default function AuthNavigator() {
       <Stack.Screen name="Verify"   component={OnboardingVerify}   />
       <Stack.Screen name="Profile"  component={OnboardingProfile}  />
       <Stack.Screen name="Tutorial" component={OnboardingTutorial} />
+      <Stack.Screen name="Login"    component={LoginScreen}        />
     </Stack.Navigator>
   );
 }

@@ -38,7 +38,7 @@ export default function OnboardingWelcome({ navigation }) {
           <Button
             title="I already have an account"
             variant="secondary"
-            onPress={() => navigation.navigate('Signup')}
+            onPress={() => navigation.navigate('Login')}
             style={styles.loginBtn}
           />
         </View>

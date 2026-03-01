@@ -6,7 +6,30 @@ import { uploadQueue } from '../config/queues.js';
 
 const router = Router();
 
-// GET /uploads — list user uploads
+async function getPresignedUrl(key, contentType) {
+  const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL } = process.env;
+
+  if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
+    console.log(`[DEV] Presign stub for key: ${key}`);
+    return { upload_url: `https://uploads.quirk.app/${key}`, public_url: null };
+  }
+
+  const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+  const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+
+  const client = new S3Client({
+    region: 'auto',
+    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
+  });
+
+  const command = new PutObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key, ContentType: contentType });
+  const upload_url = await getSignedUrl(client, command, { expiresIn: 300 });
+  const public_url = `${R2_PUBLIC_URL}/${key}`;
+  return { upload_url, public_url };
+}
+
+// GET /uploads
 router.get('/', authenticate, async (req, res, next) => {
   try {
     const { status, type, page = 1, limit = 20 } = req.query;
@@ -30,9 +53,7 @@ router.get('/', authenticate, async (req, res, next) => {
 // GET /uploads/:id
 router.get('/:id', authenticate, async (req, res, next) => {
   try {
-    const upload = await db('uploads')
-      .where({ id: req.params.id, user_id: req.user.id })
-      .first();
+    const upload = await db('uploads').where({ id: req.params.id, user_id: req.user.id }).first();
     if (!upload) return res.status(404).json({ error: 'Not found' });
 
     const royaltyEvents = await db('royalty_events')
@@ -52,16 +73,14 @@ router.get('/:id', authenticate, async (req, res, next) => {
 // POST /uploads/presign
 router.post('/presign', authenticate, async (req, res, next) => {
   try {
-    const { filename, content_type, type, task_id } = req.body;
+    const { filename, content_type, type } = req.body;
     if (!filename || !content_type || !type) {
       return res.status(400).json({ error: 'filename, content_type, and type required' });
     }
 
     const key = `uploads/${req.user.id}/${uuidv4()}-${filename}`;
-    // In production generate a real presigned R2 URL here
-    const upload_url = `https://uploads.quirk.app/${key}`;
-
-    res.json({ upload_url, key });
+    const { upload_url, public_url } = await getPresignedUrl(key, content_type);
+    res.json({ upload_url, key, public_url });
   } catch (err) {
     next(err);
   }
@@ -75,9 +94,12 @@ router.post('/complete', authenticate, async (req, res, next) => {
       return res.status(400).json({ error: 'key, type, and category required' });
     }
 
+    const public_url = process.env.R2_PUBLIC_URL ? `${process.env.R2_PUBLIC_URL}/${key}` : null;
+
     const [upload] = await db('uploads').insert({
       user_id: req.user.id,
       file_key: key,
+      thumbnail_url: public_url,
       type,
       category,
       description,
@@ -86,14 +108,9 @@ router.post('/complete', authenticate, async (req, res, next) => {
       status: 'processing',
     }).returning('*');
 
-    if (task_id) {
-      await db('tasks')
-        .where({ id: task_id })
-        .increment('quantity_pending', 1);
-    }
+    if (task_id) await db('tasks').where({ id: task_id }).increment('quantity_pending', 1);
 
     await uploadQueue.add('process-upload', { uploadId: upload.id }, { attempts: 3 });
-
     res.status(201).json(upload);
   } catch (err) {
     next(err);
@@ -103,13 +120,9 @@ router.post('/complete', authenticate, async (req, res, next) => {
 // DELETE /uploads/:id
 router.delete('/:id', authenticate, async (req, res, next) => {
   try {
-    const upload = await db('uploads')
-      .where({ id: req.params.id, user_id: req.user.id })
-      .first();
+    const upload = await db('uploads').where({ id: req.params.id, user_id: req.user.id }).first();
     if (!upload) return res.status(404).json({ error: 'Not found' });
-    if (upload.status === 'approved') {
-      return res.status(400).json({ error: 'Cannot delete approved uploads' });
-    }
+    if (upload.status === 'approved') return res.status(400).json({ error: 'Cannot delete approved uploads' });
 
     await db('uploads').where({ id: upload.id }).update({ status: 'removed' });
     res.json({ message: 'Upload removed' });
