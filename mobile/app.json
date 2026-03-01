@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Quirk",
+    "slug": "quirk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.quirk.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0A"
+      },
+      "package": "com.quirk.app"
+    },
+    "plugins": [
+      "expo-secure-store",
+      ["expo-image-picker", { "photosPermission": "Quirk needs access to your photos to upload media." }],
+      ["expo-camera", { "cameraPermission": "Quirk needs camera access to capture media." }]
+    ]
+  }
+}
