@@ -26,6 +26,8 @@ app.use(cors());
 app.use(express.json());
 app.use(rateLimiter);
 
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 // Public API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/uploads', uploadsRoutes);
