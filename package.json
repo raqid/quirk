@@ -2,5 +2,5 @@
   "name": "quirk",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["backend", "mobile"]
+  "workspaces": ["backend", "mobile", "web"]
 }
