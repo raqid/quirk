@@ -2,5 +2,25 @@
   "name": "quirk",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["backend", "mobile", "web"]
+  "workspaces": ["backend", "mobile", "web"],
+  "scripts": {
+    "dev:backend": "cd backend && node --watch src/server.js",
+    "dev:web": "cd web && bunx next dev",
+    "dev:mobile": "cd mobile && bunx expo start",
+    "seed": "cd backend && bunx knex seed:run",
+    "migrate": "cd backend && bunx knex migrate:latest",
+    "migrate:rollback": "cd backend && bunx knex migrate:rollback",
+    "build:web": "cd web && bunx next build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitejs/plugin-react": "^5.1.4",
+    "jsdom": "^28.1.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.0.18"
+  }
 }

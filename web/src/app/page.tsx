@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <>
+    <div style={{ background: "#0a0a0a" }}>
       <Navbar />
       <main>
         <Hero />
@@ -22,6 +22,6 @@ export default function Home() {
         <CTASection />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
