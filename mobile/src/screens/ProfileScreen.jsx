@@ -149,9 +149,9 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.codeLabel}>Your code</Text>
             <Text style={styles.code}>{referralCode}</Text>
           </View>
-          {referrals && Number(referrals.referred_count) > 0 && (
+          {referrals && Number(referrals.total_referred) > 0 && (
             <Text style={styles.referEarned}>
-              {referrals.referred_count} {referrals.referred_count === 1 ? 'friend' : 'friends'} joined · {formatCurrency(referrals.total_referral_earnings)} earned
+              {referrals.total_referred} {referrals.total_referred === 1 ? 'friend' : 'friends'} joined · {formatCurrency(referrals.total_earned)} earned
             </Text>
           )}
         </View>

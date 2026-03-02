@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  background: #0a0a0a;
+  color: #fff;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #fff;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion) {
+  *, ::before, ::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Keep CSS vars for enterprise dashboard (unchanged) */
+:root {
+  --bg: #0A0A0A;
+  --surface: #141414;
+  --surface-elevated: #1C1C1C;
+  --border: #2A2A2A;
+  --border-light: #333333;
+  --primary: rgba(255, 255, 255, 0.8);
+  --primary-dim: rgba(255, 255, 255, 0.06);
+  --text: #F5F5F5;
+  --text-secondary: #A0A0A0;
+  --text-tertiary: #666666;
+  --amber: rgba(180, 160, 120, 0.6);
+  --red: rgba(200, 120, 120, 0.7);
+  --blue: rgba(140, 160, 200, 0.6);
+}

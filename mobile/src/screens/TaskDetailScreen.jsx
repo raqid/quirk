@@ -9,7 +9,7 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { formatCurrency, formatDeadline } from '../utils/formatting';
-import { fetchTask } from '../services/api';
+import { fetchTask, fetchUploads } from '../services/api';
 
 const TYPE_ICONS = { photo: '📷', video: '🎥', audio: '🎙️' };
 const DIFFICULTY_COLOR = { easy: 'green', medium: 'amber', hard: 'red' };
@@ -18,12 +18,16 @@ export default function TaskDetailScreen({ navigation, route }) {
   const { taskId } = route.params;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [approvedCount, setApprovedCount] = useState(0);
 
   useEffect(() => {
-    fetchTask(taskId)
-      .then(setTask)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.allSettled([
+      fetchTask(taskId),
+      fetchUploads({ task_id: taskId, status: 'approved' }),
+    ]).then(([t, u]) => {
+      if (t.status === 'fulfilled') setTask(t.value);
+      if (u.status === 'fulfilled') setApprovedCount(u.value?.uploads?.length ?? 0);
+    }).finally(() => setLoading(false));
   }, [taskId]);
 
   if (loading) {
@@ -113,7 +117,7 @@ export default function TaskDetailScreen({ navigation, route }) {
         {/* User submissions */}
         <View style={styles.myCard}>
           <Text style={styles.myCardTitle}>Your submissions</Text>
-          <Text style={styles.myCardValue}>0 approved</Text>
+          <Text style={styles.myCardValue}>{approvedCount} approved</Text>
         </View>
       </ScrollView>
 
