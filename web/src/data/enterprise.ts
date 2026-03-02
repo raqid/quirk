@@ -235,7 +235,7 @@ export const PURCHASE_HISTORY = [
 ];
 
 export const AVAILABILITY_DATA = [
-  { name: 'Photo', value: 60, color: '#00E676' },
-  { name: 'Video', value: 25, color: '#448AFF' },
-  { name: 'Audio', value: 15, color: '#FFB300' },
+  { name: 'Photo', value: 60, color: 'rgba(255,255,255,0.5)' },
+  { name: 'Video', value: 25, color: 'rgba(140,160,200,0.6)' },
+  { name: 'Audio', value: 15, color: 'rgba(180,160,120,0.6)' },
 ];

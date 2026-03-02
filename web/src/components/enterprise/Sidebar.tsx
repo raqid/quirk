@@ -69,12 +69,13 @@ export default function Sidebar() {
           width: '28px',
           height: '28px',
           borderRadius: '6px',
-          background: 'var(--primary)',
+          background: 'rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <Zap size={14} color="#000" />
+          <Zap size={14} color="rgba(255,255,255,0.6)" />
         </div>
         <span style={{ fontWeight: '600', fontSize: '15px', color: 'var(--text)' }}>Quirk Enterprise</span>
       </div>

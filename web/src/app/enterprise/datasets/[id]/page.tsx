@@ -8,7 +8,7 @@ export function generateStaticParams() {
 }
 
 const TYPE_ICON = { photo: Camera, video: Video, audio: Mic };
-const TYPE_COLOR = { photo: 'var(--primary)', video: 'var(--blue)', audio: 'var(--amber)' };
+const TYPE_COLOR = { photo: 'rgba(255,255,255,0.5)', video: 'rgba(140,160,200,0.6)', audio: 'rgba(180,160,120,0.6)' };
 
 const LICENSE_TERMS = [
   'Full commercial use license for AI/ML training',
@@ -66,7 +66,7 @@ export default async function DatasetDetailPage({ params }: Props) {
               </span>
               <span style={{
                 fontSize: '11px', padding: '3px 10px', borderRadius: '4px',
-                background: 'var(--primary-dim)', color: 'var(--primary)', fontWeight: '500',
+                background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontWeight: '500',
               }}>
                 Quality {dataset.quality}
               </span>
@@ -75,7 +75,7 @@ export default async function DatasetDetailPage({ params }: Props) {
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, maxWidth: '560px' }}>{dataset.description}</p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '28px', fontWeight: '700', color: 'var(--primary)', margin: '0 0 2px' }}>
+            <p style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text)', margin: '0 0 2px' }}>
               ${dataset.pricePerUnit.toFixed(2)}
             </p>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>per {dataset.unit}</p>
@@ -110,12 +110,12 @@ export default async function DatasetDetailPage({ params }: Props) {
             <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text)', margin: '0 0 14px' }}>Sample Preview</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {Array.from({ length: 9 }).map((_, i) => {
-                const hue = [120, 210, 45][i % 3];
+                const lightness = 14 + (i % 3) * 2;
                 return (
                   <div key={i} style={{
                     aspectRatio: '4/3',
                     borderRadius: '6px',
-                    background: `hsl(${hue}, 20%, 18%)`,
+                    background: `hsl(0, 0%, ${lightness}%)`,
                     border: '1px solid var(--border)',
                     display: 'flex',
                     alignItems: 'center',
@@ -151,7 +151,7 @@ export default async function DatasetDetailPage({ params }: Props) {
                     <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', margin: 0 }}>{tier.quantity.toLocaleString()} {dataset.unit}s</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '15px', fontWeight: '600', color: 'var(--primary)', margin: '0 0 2px' }}>
+                    <p style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text)', margin: '0 0 2px' }}>
                       ${tier.total}
                     </p>
                     <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', margin: 0 }}>
@@ -165,7 +165,7 @@ export default async function DatasetDetailPage({ params }: Props) {
               width: '100%',
               marginTop: '14px',
               padding: '12px',
-              background: 'var(--primary)',
+              background: '#fff',
               color: '#000',
               border: 'none',
               borderRadius: '8px',
@@ -197,7 +197,7 @@ export default async function DatasetDetailPage({ params }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {LICENSE_TERMS.map((term) => (
                 <div key={term} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                  <CheckCircle size={13} color="var(--primary)" style={{ flexShrink: 0, marginTop: '1px' }} />
+                  <CheckCircle size={13} color="rgba(255,255,255,0.4)" style={{ flexShrink: 0, marginTop: '1px' }} />
                   <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{term}</p>
                 </div>
               ))}

@@ -48,12 +48,12 @@ body {
   --surface-elevated: #1C1C1C;
   --border: #2A2A2A;
   --border-light: #333333;
-  --primary: #00E676;
-  --primary-dim: rgba(0, 230, 118, 0.13);
+  --primary: rgba(255, 255, 255, 0.8);
+  --primary-dim: rgba(255, 255, 255, 0.06);
   --text: #F5F5F5;
   --text-secondary: #A0A0A0;
   --text-tertiary: #666666;
-  --amber: #FFB300;
-  --red: #FF5252;
-  --blue: #448AFF;
+  --amber: rgba(180, 160, 120, 0.6);
+  --red: rgba(200, 120, 120, 0.7);
+  --blue: rgba(140, 160, 200, 0.6);
 }

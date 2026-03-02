@@ -24,12 +24,12 @@ export default function RequestPage() {
       <div style={{ padding: '32px', maxWidth: '640px' }}>
         <div style={{
           background: 'var(--surface)',
-          border: '1px solid var(--primary)',
+          border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '12px',
           padding: '40px',
           textAlign: 'center',
         }}>
-          <CheckCircle size={48} color="var(--primary)" style={{ marginBottom: '16px' }} />
+          <CheckCircle size={48} color="rgba(255,255,255,0.5)" style={{ marginBottom: '16px' }} />
           <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text)', margin: '0 0 8px' }}>Request Submitted</h2>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
             Our team will review your request and respond within 24 hours.
@@ -38,7 +38,7 @@ export default function RequestPage() {
             onClick={() => setSubmitted(false)}
             style={{
               padding: '10px 24px',
-              background: 'var(--primary)',
+              background: '#fff',
               color: '#000',
               border: 'none',
               borderRadius: '8px',
@@ -108,9 +108,9 @@ export default function RequestPage() {
                   style={{
                     padding: '5px 12px',
                     borderRadius: '20px',
-                    border: `1px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
-                    background: selected ? 'var(--primary-dim)' : 'transparent',
-                    color: selected ? 'var(--primary)' : 'var(--text-secondary)',
+                    border: `1px solid ${selected ? 'rgba(255,255,255,0.25)' : 'var(--border)'}`,
+                    background: selected ? 'rgba(255,255,255,0.08)' : 'transparent',
+                    color: selected ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)',
                     fontSize: '12px',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
@@ -171,7 +171,7 @@ export default function RequestPage() {
           onClick={() => setSubmitted(true)}
           style={{
             padding: '13px',
-            background: 'var(--primary)',
+            background: '#fff',
             color: '#000',
             border: 'none',
             borderRadius: '8px',

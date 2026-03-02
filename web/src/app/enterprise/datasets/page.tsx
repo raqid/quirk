@@ -10,13 +10,13 @@ const TYPE_ICON: Record<DataType, React.ElementType> = {
 };
 
 const TYPE_COLOR: Record<DataType, string> = {
-  photo: 'var(--primary)',
-  audio: 'var(--amber)',
-  video: 'var(--blue)',
+  photo: 'rgba(255,255,255,0.5)',
+  audio: 'rgba(180,160,120,0.6)',
+  video: 'rgba(140,160,200,0.6)',
 };
 
 function QualityBar({ score }: { score: number }) {
-  const color = score >= 90 ? 'var(--primary)' : score >= 80 ? 'var(--blue)' : 'var(--amber)';
+  const color = score >= 90 ? 'rgba(255,255,255,0.6)' : score >= 80 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.25)';
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -95,7 +95,7 @@ function DatasetCard({ dataset }: { dataset: typeof DATASETS[0] }) {
           paddingTop: '12px',
         }}>
           <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Per {dataset.unit}</span>
-          <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--primary)' }}>
+          <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text)' }}>
             ${dataset.pricePerUnit.toFixed(2)}
           </span>
         </div>

@@ -5,8 +5,8 @@ import DonutChart from '@/components/enterprise/DonutChart';
 import { RECENT_PURCHASES, AVAILABILITY_DATA } from '@/data/enterprise';
 
 const STATUS_COLORS: Record<string, string> = {
-  Delivered: 'var(--primary)',
-  Processing: 'var(--amber)',
+  Delivered: 'rgba(255,255,255,0.5)',
+  Processing: 'rgba(180,160,120,0.6)',
 };
 
 export default function EnterpriseDashboard() {
@@ -72,7 +72,7 @@ export default function EnterpriseDashboard() {
             alignItems: 'center',
           }}>
             <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text)', margin: 0 }}>Recent Purchases</p>
-            <a href="/enterprise/purchases" style={{ fontSize: '12px', color: 'var(--primary)', textDecoration: 'none' }}>View all</a>
+            <a href="/enterprise/purchases" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>View all</a>
           </div>
           <DataTable columns={columns} rows={RECENT_PURCHASES} />
         </div>

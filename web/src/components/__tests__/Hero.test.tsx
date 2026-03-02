@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('framer-motion', () => import('../../__mocks__/framer-motion'));
 
 import Hero from '../Hero';
 
@@ -18,5 +20,17 @@ describe('Hero', () => {
     render(<Hero />);
     const headline = screen.getByText(/Your data trains AI/i);
     expect(headline.closest('section')).toBeInTheDocument();
+  });
+
+  it('renders phone mockup with earnings', () => {
+    render(<Hero />);
+    expect(screen.getByText('Total Earned')).toBeInTheDocument();
+    expect(screen.getByText('$284.50')).toBeInTheDocument();
+  });
+
+  it('renders task cards in phone mockup', () => {
+    render(<Hero />);
+    expect(screen.getByText('Photo · Street Signs')).toBeInTheDocument();
+    expect(screen.getByText('Audio · Ambient Sound')).toBeInTheDocument();
   });
 });

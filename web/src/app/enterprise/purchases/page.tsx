@@ -2,8 +2,8 @@ import { DollarSign, Download } from 'lucide-react';
 import { PURCHASE_HISTORY } from '@/data/enterprise';
 
 const STATUS_COLORS: Record<string, string> = {
-  Delivered: 'var(--primary)',
-  Processing: 'var(--amber)',
+  Delivered: 'rgba(255,255,255,0.5)',
+  Processing: 'rgba(180,160,120,0.6)',
 };
 
 export default function PurchasesPage() {
@@ -38,7 +38,7 @@ export default function PurchasesPage() {
           justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <DollarSign size={18} color="var(--primary)" />
+          <DollarSign size={18} color="rgba(255,255,255,0.5)" />
         </div>
         <div>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 2px' }}>Total Spend (All Time)</p>

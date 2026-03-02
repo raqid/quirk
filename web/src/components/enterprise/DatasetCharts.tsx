@@ -52,7 +52,7 @@ export default function DatasetCharts({ dataset }: DatasetChartsProps) {
             <Tooltip {...tooltipStyle} formatter={(v: number) => [v.toLocaleString(), 'Items']} />
             <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={16}>
               {dataset.geoDistribution.map((_, i) => (
-                <Cell key={i} fill={i === 0 ? 'var(--primary)' : 'var(--surface-elevated)'} stroke="var(--border)" />
+                <Cell key={i} fill={i === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)'} stroke="var(--border)" />
               ))}
             </Bar>
           </BarChart>
@@ -76,7 +76,7 @@ export default function DatasetCharts({ dataset }: DatasetChartsProps) {
             <Tooltip {...tooltipStyle} formatter={(v: number) => [v.toLocaleString(), 'Items']} />
             <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={32}>
               {dataset.qualityDistribution.map((_, i) => (
-                <Cell key={i} fill={i === 0 ? 'var(--primary)' : 'var(--blue)'} opacity={1 - i * 0.2} />
+                <Cell key={i} fill="rgba(255,255,255,0.3)" opacity={1 - i * 0.2} />
               ))}
             </Bar>
           </BarChart>
