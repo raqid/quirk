@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  ScrollView, TouchableOpacity, Image,
+  ScrollView, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
 import Badge from '../components/Badge';
 import RoyaltyEvent from '../components/RoyaltyEvent';
@@ -9,17 +9,47 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { formatCurrency, formatDate } from '../utils/formatting';
-import { mockUploads, mockRoyaltyEvents } from '../mocks/mockData';
+import { fetchUpload, fetchRoyalties } from '../services/api';
 
 const STATUS_COLOR = { approved: 'green', pending: 'amber', processing: 'amber', rejected: 'red', removed: 'gray' };
 const TYPE_ICONS = { photo: '📷', video: '🎥', audio: '🎙️' };
 
 export default function AssetDetailScreen({ navigation, route }) {
   const { uploadId } = route.params;
-  const upload = mockUploads.find((u) => u.id === uploadId);
-  if (!upload) return null;
+  const [upload, setUpload] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const events = mockRoyaltyEvents.filter((e) => e.upload_id === upload.id);
+  useEffect(() => {
+    Promise.allSettled([
+      fetchUpload(uploadId),
+      fetchRoyalties({ upload_id: uploadId }),
+    ]).then(([u, r]) => {
+      if (u.status === 'fulfilled') setUpload(u.value);
+      if (r.status === 'fulfilled') setEvents(r.value?.royalties || []);
+    }).finally(() => setLoading(false));
+  }, [uploadId]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <ActivityIndicator color={colors.primary} style={{ flex: 1 }} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!upload) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 40 }}>Asset not found.</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>

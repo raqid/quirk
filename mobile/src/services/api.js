@@ -43,7 +43,10 @@ export async function presignUpload({ filename, content_type, type }) {
   return data;
 }
 
-export function uploadToR2(uploadUrl, fileUri, contentType, onProgress) {
+export async function uploadToR2(uploadUrl, fileUri, contentType, onProgress) {
+  const response = await fetch(fileUri);
+  const blob = await response.blob();
+
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', uploadUrl);
@@ -55,7 +58,7 @@ export function uploadToR2(uploadUrl, fileUri, contentType, onProgress) {
     }
     xhr.onload  = () => (xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
     xhr.onerror = () => reject(new Error('Network error during upload'));
-    xhr.send({ uri: fileUri });
+    xhr.send(blob);
   });
 }
 
