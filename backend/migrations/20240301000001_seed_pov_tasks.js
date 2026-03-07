@@ -1,0 +1,75 @@
+export async function up(knex) {
+  await knex('tasks').insert([
+    {
+      title: 'First-Person Cooking Process',
+      description: 'Record yourself cooking a meal from a first-person perspective. Show ingredient preparation, cooking steps, and plating. Camera should be mounted on your head or chest for a true egocentric view.',
+      category: 'Egocentric & POV',
+      data_type: 'video',
+      pay_per_submission: 0.25,
+      royalty_rate: 0.05,
+      quantity_needed: 1000,
+      quantity_filled: 0,
+      quantity_pending: 0,
+      difficulty: 'medium',
+      is_hot: true,
+      auto_approve: true,
+      min_quality_score: 70,
+      status: 'active',
+      requirements: JSON.stringify([
+        'First-person / egocentric camera angle',
+        'Minimum 2 minutes, maximum 10 minutes',
+        'Good lighting — kitchen should be well-lit',
+        'Show at least 3 distinct cooking steps',
+      ]),
+    },
+    {
+      title: 'Walking Tour of Your Neighborhood',
+      description: 'Take a walking tour of your neighborhood from a first-person perspective. Capture sidewalks, streets, buildings, parks, and daily life as you walk through your area.',
+      category: 'Egocentric & POV',
+      data_type: 'video',
+      pay_per_submission: 0.15,
+      royalty_rate: 0.04,
+      quantity_needed: 3000,
+      quantity_filled: 0,
+      quantity_pending: 0,
+      difficulty: 'easy',
+      is_hot: false,
+      auto_approve: true,
+      min_quality_score: 65,
+      status: 'active',
+      requirements: JSON.stringify([
+        'First-person / egocentric camera angle',
+        'Minimum 3 minutes of continuous walking',
+        'Daytime recording with natural light',
+        'Avoid filming identifiable faces of strangers',
+      ]),
+    },
+    {
+      title: 'Hands-On Task Recording',
+      description: 'Record yourself performing a hands-on task (assembling, repairing, crafting, cleaning, etc.) from a first-person POV. The camera should capture your hands and the work surface clearly.',
+      category: 'Egocentric & POV',
+      data_type: 'video',
+      pay_per_submission: 0.30,
+      royalty_rate: 0.06,
+      quantity_needed: 500,
+      quantity_filled: 0,
+      quantity_pending: 0,
+      difficulty: 'hard',
+      is_hot: true,
+      auto_approve: true,
+      min_quality_score: 75,
+      status: 'active',
+      requirements: JSON.stringify([
+        'First-person / egocentric camera angle',
+        'Both hands must be visible during the task',
+        'Minimum 1 minute, maximum 5 minutes',
+        'Stable footage — use a head or chest mount',
+        'Clear view of the work surface and objects',
+      ]),
+    },
+  ]);
+}
+
+export async function down(knex) {
+  await knex('tasks').where({ category: 'Egocentric & POV' }).del();
+}

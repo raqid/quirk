@@ -53,7 +53,7 @@ router.post('/', adminAuth, async (req, res, next) => {
       status: 'completed',
     }).returning('*');
 
-    await royaltyQueue.add('distribute-royalties', { transactionId: transaction.id }, { attempts: 3 });
+    if (royaltyQueue) await royaltyQueue.add('distribute-royalties', { transactionId: transaction.id }, { attempts: 3 });
 
     res.status(201).json(transaction);
   } catch (err) { next(err); }

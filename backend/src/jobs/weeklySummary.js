@@ -1,6 +1,7 @@
 import { Worker } from 'bullmq';
 import redis from '../config/redis.js';
 import db from '../config/db.js';
+import { sendPushNotification } from '../utils/pushNotification.js';
 
 const worker = new Worker('weekly-summary', async () => {
   const since = new Date(Date.now() - 7 * 24 * 3600 * 1000);
@@ -14,11 +15,19 @@ const worker = new Worker('weekly-summary', async () => {
 
     if (Number(uploads.count) === 0 && Number(royalties.count) === 0) continue;
 
+    const summaryBody = `This week: ${uploads.count} uploads, $${Number(royalties.total || 0).toFixed(2)} earned, ${royalties.count} royalty events.`;
+
     await db('notifications').insert({
       user_id: id,
       type: 'weekly_summary',
       title: 'Your week in review',
-      body: `This week: ${uploads.count} uploads, $${Number(royalties.total || 0).toFixed(2)} earned, ${royalties.count} royalty events.`,
+      body: summaryBody,
+    });
+
+    await sendPushNotification(id, {
+      title: 'Your week in review',
+      body: summaryBody,
+      data: { screen: 'Home' },
     });
   }
 }, { connection: redis });

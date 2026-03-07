@@ -73,7 +73,7 @@ router.post('/withdraw', authenticate, async (req, res, next) => {
       return [p];
     });
 
-    await payoutQueue.add('process-payout', { payoutId: payout.id }, { attempts: 3 });
+    if (payoutQueue) await payoutQueue.add('process-payout', { payoutId: payout.id }, { attempts: 3 });
     res.json(payout);
   } catch (err) {
     next(err);

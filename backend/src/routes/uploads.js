@@ -110,7 +110,7 @@ router.post('/complete', authenticate, async (req, res, next) => {
 
     if (task_id) await db('tasks').where({ id: task_id }).increment('quantity_pending', 1);
 
-    await uploadQueue.add('process-upload', { uploadId: upload.id }, { attempts: 3 });
+    if (uploadQueue) await uploadQueue.add('process-upload', { uploadId: upload.id }, { attempts: 3 });
     res.status(201).json(upload);
   } catch (err) {
     next(err);

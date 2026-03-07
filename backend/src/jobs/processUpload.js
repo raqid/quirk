@@ -1,12 +1,14 @@
 import { Worker } from 'bullmq';
 import redis from '../config/redis.js';
 import db from '../config/db.js';
+import { sendPushNotification } from '../utils/pushNotification.js';
 
 const worker = new Worker('upload-processing', async (job) => {
   const { uploadId } = job.data;
   const upload = await db('uploads').where({ id: uploadId }).first();
   if (!upload) return;
 
+  // MOCK: Random quality score. Replace with real ML quality assessment before production.
   const quality_score = Math.floor(60 + Math.random() * 36);
   await db('uploads').where({ id: uploadId }).update({ quality_score });
 
@@ -37,6 +39,12 @@ const worker = new Worker('upload-processing', async (job) => {
         body: `Your ${upload.type} was approved. $${pay.toFixed(2)} added to your wallet.`,
         reference_id: uploadId,
       });
+    });
+
+    await sendPushNotification(upload.user_id, {
+      title: 'Upload approved!',
+      body: `Your ${upload.type} was approved. $${pay.toFixed(2)} added to your wallet.`,
+      data: { screen: 'Wallet' },
     });
   }
 }, { connection: redis });

@@ -4,31 +4,45 @@ Active tasks and long-term plans for the Quirk project. Claude Code should refer
 
 ## Active Tasks
 
-_No active tasks._
+- [x] **Mobile UI overhaul** — monochromatic palette, Outfit font, Lucide icons, shared components (Card, Input, ScreenHeader). All 38 files updated. See plan in `~/.claude/plans/moonlit-moseying-anchor.md`
 
-## Demo Sprint — see [demo-plan.md](./demo-plan.md)
+## MVP Priorities
 
-### Priority 1 (do first)
-- [ ] Fix AssetDetailScreen — wire to real API, remove mock data
-- [ ] Fix ProfileScreen referral field mismatch (`referred_count` → `total_referred`, etc.)
-- [ ] Fix TaskDetailScreen — use `user_submission_count` from API
-- [ ] Fix R2 upload — `uploadToR2` sends `{ uri }` object instead of file blob
-- [ ] Demo seed script (`backend/seeds/demo-seed.js`) — realistic users, tasks, uploads, royalties, transactions
-- [ ] Landing page website in `web/` — Next.js + Tailwind, dark theme, deploy to Vercel
+### P0 — Core bugs (blocking the app)
+- [x] Fix AssetDetailScreen — use royalty_events from upload response instead of separate royalties call
+- [x] Fix TaskDetailScreen — use `user_submission_count` from task API response
+- [ ] Fix R2 upload — verify `uploadToR2` works end-to-end with real R2 credentials on Railway
+- [x] Mock payout worker — simulates payment processing with delay, logs MOCK prefix
 
-### Priority 2 (completes the story)
-- [ ] Visual polish — earnings chart data, royalty feed with real company names, wallet history, notifications
-- [ ] Enterprise dashboard mockup — dataset catalog, detail, request form, purchase history
+### P1 — Core loop completeness
+- [ ] Verify OTP email delivery works end-to-end (Resend integration)
+- [ ] Verify R2 credentials are configured on Railway deployment
+- [x] Pull-to-refresh on Tasks, Wallet, Royalties screens
+- [x] Error/retry states on all screens (Home, Tasks, Royalties)
 
-## Backlog (Post-Demo MVP) — see [mvp-plan.md](./mvp-plan.md)
+### P2 — User expectations
+- [x] Loading skeletons for data-fetching screens
+- [x] App icon + splash screen
+- [x] Push notification sending (backend saves tokens but never sends pushes)
+- [x] Audio recording (expo-av installed, real recording flow)
 
-- [ ] Audio recording (expo-av)
+### P3 — Nice to have
+- [ ] Referral share sheet (referral system exists, no share UI beyond Profile)
+- [ ] Real quality scoring (currently random 60-96, marked MOCK)
+- [ ] Admin web panel (admin routes exist, no frontend)
 - [ ] Demand signals UI (hot tasks emphasis)
-- [ ] Referral share sheet
-- [ ] Pull-to-refresh on main screens
-- [ ] Loading skeletons + error/retry states
-- [ ] App icon + splash screen
-- [ ] Push notification permission + badge
+
+## Mocked APIs (not real money)
+- **Payout processing** (`backend/src/jobs/processPayout.js`) — simulates with 2-5s delay, generates `MOCK-PAY-*` transaction IDs
+- **Quality scoring** (`backend/src/jobs/processUpload.js`) — random score 60-96, auto-approves above task threshold
+- **Royalty distribution** (`backend/src/jobs/distributeRoyalties.js`) — real ledger math but no actual money enters the system
+- **Referral royalties** (`backend/src/jobs/referralRoyalty.js`) — 10% referral cut, internal ledger only
+
+## Backlog (Post-MVP)
+- [ ] Real payment rails (Stripe Connect, bKash, PayPal, Wise)
+- [ ] Real ML quality scoring pipeline
+- [ ] Admin web dashboard
+- [ ] Enterprise dashboard connected to backend API
 
 ## Long-Term Plans
 
@@ -37,7 +51,15 @@ _No active tasks._
 
 ## Completed
 
-_Nothing completed yet._
+- [x] Egocentric/POV task category — seed migration + mobile upload category
+- [x] Push notifications — mobile registration, backend sending on upload approval + weekly summary
+- [x] Loading skeletons — all 5 data screens (Home, Tasks, Wallet, Royalties, TaskDetail)
+- [x] App icon + splash screen — 1024x1024 icon, adaptive icon, 1284x2778 splash
+- [x] Infra env var warnings — RESEND_API_KEY, R2_ACCOUNT_ID on backend startup
+- [x] Fix AssetDetailScreen — royalty_events from upload response
+- [x] Fix TaskDetailScreen — user_submission_count from task API
+- [x] Mock payout worker with realistic delay + MOCK prefix logging
+- [x] Mark quality scoring as MOCK in code
 
 <!--
 Workflow:
