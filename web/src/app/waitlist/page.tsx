@@ -2,13 +2,27 @@
 
 import { useState } from 'react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://quirk-backend-production-eb81.up.railway.app/api/v1';
+
 export default function WaitlistPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) setSubmitted(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/waitlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type: 'enterprise' }),
+      });
+      if (!res.ok) throw new Error('Failed to submit');
+      setSubmitted(true);
+    } catch {
+      setError('something went wrong. try again.');
+    }
   };
 
   return (
@@ -25,7 +39,7 @@ export default function WaitlistPage() {
           style={{ opacity: 0.85 }}
         />
 
-        {/* Coming soon label */}
+        {/* Label */}
         <p
           className="text-[12px] tracking-[0.35em] uppercase mb-10"
           style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-sans)', fontWeight: 300 }}
@@ -104,6 +118,15 @@ export default function WaitlistPage() {
             style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-sans)', fontWeight: 300 }}
           >
             we&apos;ll be in touch.
+          </p>
+        )}
+
+        {error && (
+          <p
+            className="text-[13px] mt-4"
+            style={{ color: 'rgba(200, 120, 120, 0.7)', fontFamily: 'var(--font-sans)', fontWeight: 300 }}
+          >
+            {error}
           </p>
         )}
       </div>

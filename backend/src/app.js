@@ -11,6 +11,7 @@ import royaltiesRoutes from './routes/royalties.js';
 import referralsRoutes from './routes/referrals.js';
 import notificationsRoutes from './routes/notifications.js';
 import profileRoutes from './routes/profile.js';
+import waitlistRoutes from './routes/waitlist.js';
 
 import adminSubmissionsRoutes from './admin-routes/submissions.js';
 import adminTasksRoutes from './admin-routes/tasks.js';
@@ -37,6 +38,7 @@ app.use('/api/v1/royalties', royaltiesRoutes);
 app.use('/api/v1/referrals', referralsRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/waitlist', waitlistRoutes);
 
 // Admin API
 app.use('/api/v1/admin/submissions', adminSubmissionsRoutes);
