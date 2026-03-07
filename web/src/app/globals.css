@@ -2,11 +2,17 @@
 
 @theme inline {
   --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+  --font-serif: "Cormorant Garamond", "Georgia", serif;
+  --color-olive: #8B9A5B;
+  --color-olive-dim: rgba(139, 154, 91, 0.15);
 }
 
 *, *::before, *::after {
-  margin: 0;
   box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ul, ol {
+  margin: 0;
 }
 
 html {
@@ -56,4 +62,6 @@ body {
   --amber: rgba(180, 160, 120, 0.6);
   --red: rgba(200, 120, 120, 0.7);
   --blue: rgba(140, 160, 200, 0.6);
+  --green: #00E676;
+  --surface-hover: rgba(255, 255, 255, 0.08);
 }

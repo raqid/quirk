@@ -12,36 +12,56 @@ export default function CTASection() {
   };
 
   return (
-    <section className="pb-24 px-6 flex flex-col items-center">
+    <section className="pb-28 px-6 flex flex-col items-center">
+      <p
+        className="text-[12px] tracking-[0.25em] uppercase mb-8"
+        style={{ color: "rgba(255,255,255,0.2)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
+      >
+        join the waitlist
+      </p>
+
       {!submitted ? (
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-3 w-full max-w-sm"
+          className="flex items-center w-full max-w-md rounded-full overflow-hidden"
+          style={{
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.03)",
+          }}
         >
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-            className="flex-1 h-11 px-4 rounded-lg text-sm font-light outline-none transition-colors"
+            placeholder="your@email.com"
+            className="flex-1 h-12 px-6 text-[14px] outline-none bg-transparent"
             style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              color: "rgba(255,255,255,0.8)",
+              color: "rgba(255,255,255,0.6)",
+              fontFamily: "var(--font-sans)",
+              fontWeight: 300,
             }}
           />
           <button
             type="submit"
-            className="h-11 px-5 rounded-lg text-sm font-medium cursor-pointer transition-colors"
-            style={{ background: "#fff", color: "#000" }}
+            className="h-10 px-6 mr-1 rounded-full text-[13px] cursor-pointer transition-all"
+            style={{
+              background: "var(--color-olive-dim)",
+              color: "var(--color-olive)",
+              border: "1px solid rgba(139, 154, 91, 0.2)",
+              fontFamily: "var(--font-sans)",
+              fontWeight: 400,
+            }}
           >
-            Get Early Access
+            get in
           </button>
         </form>
       ) : (
-        <p className="text-sm font-light" style={{ color: "rgba(255,255,255,0.4)" }}>
-          We&apos;ll be in touch.
+        <p
+          className="text-[14px]"
+          style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
+        >
+          we&apos;ll be in touch.
         </p>
       )}
     </section>

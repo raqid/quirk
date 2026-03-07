@@ -9,17 +9,20 @@ const stats = [
 
 export default function StatsBar() {
   return (
-    <section className="w-full px-6 sm:px-10 pb-32 flex flex-col items-center">
-      <div className="max-w-2xl w-full flex flex-wrap gap-x-12 gap-y-6">
+    <section className="w-full px-6 sm:px-10 pb-36 flex flex-col items-center">
+      <div className="max-w-2xl w-full flex flex-wrap gap-x-14 gap-y-8">
         {stats.map((s) => (
           <div key={s.label}>
             <span
-              className="text-[22px] font-semibold"
-              style={{ color: "rgba(255,255,255,0.8)", letterSpacing: "-0.02em" }}
+              className="text-[24px]"
+              style={{ color: "var(--color-olive)", fontFamily: "var(--font-serif)", fontWeight: 300 }}
             >
               {s.value}
             </span>
-            <span className="text-[13px] font-light ml-2" style={{ color: "rgba(255,255,255,0.25)" }}>
+            <span
+              className="text-[13px] ml-2.5"
+              style={{ color: "rgba(255,255,255,0.2)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
+            >
               {s.label}
             </span>
           </div>

@@ -20,18 +20,27 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="w-full px-6 sm:px-10 pb-32 flex flex-col items-center">
-      <div className="text-left max-w-2xl w-full flex flex-col gap-10">
-        <p className="font-mono text-[12px] tracking-wider" style={{ color: "rgba(255,255,255,0.2)" }}>
+    <section className="w-full px-6 sm:px-10 pb-36 flex flex-col items-center">
+      <div className="text-left max-w-2xl w-full flex flex-col gap-12">
+        <p
+          className="text-[11px] tracking-[0.3em] uppercase"
+          style={{ color: "rgba(255,255,255,0.15)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
+        >
           06
         </p>
 
         {testimonials.map((t) => (
           <div key={t.name}>
-            <p className="text-[15px] leading-[1.85] font-light mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <p
+              className="text-[17px] leading-[1.85] mb-4"
+              style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-serif)", fontWeight: 300, fontStyle: "italic" }}
+            >
               &ldquo;{t.quote}&rdquo;
             </p>
-            <p className="text-[12px] font-light" style={{ color: "rgba(255,255,255,0.2)" }}>
+            <p
+              className="text-[12px] tracking-[0.1em]"
+              style={{ color: "rgba(255,255,255,0.15)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
+            >
               — {t.name}, {t.country}
             </p>
           </div>
