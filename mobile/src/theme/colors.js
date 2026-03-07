@@ -1,23 +1,26 @@
 export const colors = {
   background: '#0A0A0A',
-  surface: '#141414',
-  surfaceElevated: '#1C1C1C',
-  border: '#2A2A2A',
-  borderLight: '#333333',
+  surface: 'rgba(255,255,255,0.04)',
+  surfaceElevated: 'rgba(255,255,255,0.06)',
+  border: 'rgba(255,255,255,0.06)',
+  borderLight: 'rgba(255,255,255,0.08)',
 
-  primary: '#00E676',
-  primaryDim: '#00E67622',
+  primary: 'rgba(255,255,255,0.8)',
+  primaryDim: 'rgba(255,255,255,0.06)',
 
-  text: '#F5F5F5',
-  textSecondary: '#A0A0A0',
-  textTertiary: '#666666',
+  text: 'rgba(255,255,255,0.9)',
+  textSecondary: 'rgba(255,255,255,0.5)',
+  textTertiary: 'rgba(255,255,255,0.3)',
 
-  amber: '#FFB300',
-  amberDim: '#FFB30022',
-  red: '#FF5252',
-  redDim: '#FF525222',
-  blue: '#448AFF',
-  blueDim: '#448AFF22',
+  amber: 'rgba(180,160,120,0.6)',
+  amberDim: 'rgba(180,160,120,0.1)',
+  red: 'rgba(200,120,120,0.7)',
+  redDim: 'rgba(200,120,120,0.1)',
+  blue: 'rgba(140,160,200,0.6)',
+  blueDim: 'rgba(140,160,200,0.1)',
+
+  ctaBackground: '#FFFFFF',
+  ctaText: '#0A0A0A',
 
   tabBar: '#111111',
 };

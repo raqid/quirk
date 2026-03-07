@@ -1,5 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { colors } from '../theme/colors';
 import OnboardingWelcome from '../screens/OnboardingWelcome';
 import OnboardingSignup from '../screens/OnboardingSignup';
 import OnboardingVerify from '../screens/OnboardingVerify';
@@ -11,7 +12,7 @@ const Stack = createStackNavigator();
 
 export default function AuthNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#0A0A0A' } }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="Welcome"  component={OnboardingWelcome}  />
       <Stack.Screen name="Signup"   component={OnboardingSignup}   />
       <Stack.Screen name="Verify"   component={OnboardingVerify}   />

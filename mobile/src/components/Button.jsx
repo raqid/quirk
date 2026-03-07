@@ -3,17 +3,24 @@ import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-nat
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 
-export default function Button({ title, onPress, variant = 'primary', disabled, loading, style }) {
+export default function Button({ title, onPress, variant = 'primary', size = 'default', disabled, loading, style }) {
   const isPrimary = variant === 'primary';
+  const isSmall = size === 'small';
   return (
     <TouchableOpacity
-      style={[styles.base, isPrimary ? styles.primary : styles.secondary, disabled && styles.disabled, style]}
+      style={[
+        styles.base,
+        isSmall && styles.small,
+        isPrimary ? styles.primary : styles.secondary,
+        disabled && styles.disabled,
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
     >
       {loading
-        ? <ActivityIndicator color={isPrimary ? colors.background : colors.primary} size="small" />
+        ? <ActivityIndicator color={isPrimary ? colors.ctaText : colors.text} size="small" />
         : <Text style={[styles.text, isPrimary ? styles.textPrimary : styles.textSecondary]}>{title}</Text>
       }
     </TouchableOpacity>
@@ -22,13 +29,14 @@ export default function Button({ title, onPress, variant = 'primary', disabled, 
 
 const styles = StyleSheet.create({
   base: {
-    height: 52,
-    borderRadius: 12,
+    height: 48,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  primary: { backgroundColor: colors.primary },
+  small: { height: 36, paddingHorizontal: 16 },
+  primary: { backgroundColor: colors.ctaBackground },
   secondary: {
     backgroundColor: 'transparent',
     borderWidth: 1,
@@ -36,6 +44,6 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.4 },
   text: { ...typography.body, fontWeight: '600' },
-  textPrimary: { color: colors.background },
+  textPrimary: { color: colors.ctaText },
   textSecondary: { color: colors.text },
 });

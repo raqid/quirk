@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -25,7 +26,7 @@ export default function NotificationBanner({ notification, onDismiss }) {
       </View>
       {onDismiss && (
         <TouchableOpacity onPress={onDismiss} style={styles.dismiss}>
-          <Text style={styles.dismissText}>✕</Text>
+          <Icon name="x" size={14} color={colors.textTertiary} />
         </TouchableOpacity>
       )}
     </View>
@@ -37,7 +38,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: 10,
+    borderRadius: 12,
     borderLeftWidth: 3,
     borderWidth: 1,
     borderColor: colors.border,
@@ -49,5 +50,4 @@ const styles = StyleSheet.create({
   title: { ...typography.bodySmall, color: colors.text, fontWeight: '600' },
   body: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
   dismiss: { padding: spacing.xs },
-  dismissText: { color: colors.textTertiary, fontSize: 14 },
 });

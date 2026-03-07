@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView,
+  TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import Button from '../components/Button';
+import ScreenHeader from '../components/ScreenHeader';
+import Input from '../components/Input';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -36,13 +38,9 @@ export default function OnboardingSignup({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <ScreenHeader title="Create account" onBack={() => navigation.goBack()} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
-            <Text style={styles.backText}>← Back</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.heading}>Create account</Text>
           <Text style={styles.sub}>Join thousands of contributors earning from their data</Text>
 
           <View style={styles.toggle}>
@@ -53,23 +51,21 @@ export default function OnboardingSignup({ navigation }) {
             ))}
           </View>
 
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder={mode === 'phone' ? '+1 555 000 0000' : 'you@example.com'}
-            placeholderTextColor={colors.textTertiary}
             value={identifier}
             onChangeText={setIdentifier}
             keyboardType={mode === 'phone' ? 'phone-pad' : 'email-address'}
             autoCapitalize="none"
+            style={styles.inputWrapper}
           />
 
-          <TextInput
-            style={[styles.input, { marginTop: spacing.sm }]}
+          <Input
             placeholder="Password (min 6 characters)"
-            placeholderTextColor={colors.textTertiary}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            style={styles.inputWrapper}
           />
 
           <TouchableOpacity onPress={() => setShowReferral(!showReferral)} style={styles.referralToggle}>
@@ -77,13 +73,12 @@ export default function OnboardingSignup({ navigation }) {
           </TouchableOpacity>
 
           {showReferral && (
-            <TextInput
-              style={styles.input}
+            <Input
               placeholder="Referral code (optional)"
-              placeholderTextColor={colors.textTertiary}
               value={referralCode}
               onChangeText={setReferralCode}
               autoCapitalize="characters"
+              style={styles.inputWrapper}
             />
           )}
 
@@ -101,28 +96,15 @@ export default function OnboardingSignup({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   container: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  back: { marginBottom: spacing.lg },
-  backText: { ...typography.body, color: colors.textSecondary },
-  heading: { ...typography.heading2, color: colors.text, marginBottom: spacing.xs },
   sub: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xl },
   toggle: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 10, marginBottom: spacing.md, padding: 4 },
   toggleBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
   toggleActive: { backgroundColor: colors.surfaceElevated },
   toggleText: { ...typography.body, color: colors.textSecondary },
   toggleTextActive: { color: colors.text, fontWeight: '600' },
-  input: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    height: 52,
-    ...typography.body,
-    marginBottom: spacing.sm,
-  },
+  inputWrapper: { marginBottom: spacing.sm },
   referralToggle: { marginBottom: spacing.sm },
-  referralToggleText: { ...typography.bodySmall, color: colors.primary },
+  referralToggleText: { ...typography.bodySmall, color: colors.text },
   error: { ...typography.bodySmall, color: colors.red, marginBottom: spacing.sm },
   cta: { marginTop: spacing.md },
   terms: { ...typography.caption, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.lg, lineHeight: 18 },

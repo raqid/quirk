@@ -4,6 +4,8 @@ import {
   ScrollView, TouchableOpacity, TextInput, Alert, Switch, Linking,
 } from 'react-native';
 import Button from '../components/Button';
+import ScreenHeader from '../components/ScreenHeader';
+import { Icon } from '../utils/icons';
 import { updatePayoutMethod } from '../services/api';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -28,7 +30,7 @@ function SettingRow({ icon, label, right, onPress, last }) {
   return (
     <>
       <TouchableOpacity style={styles.settingRow} onPress={onPress} activeOpacity={0.7}>
-        <Text style={styles.settingIcon}>{icon}</Text>
+        <Icon name={icon} size={18} color={colors.text} />
         <Text style={styles.settingLabel}>{label}</Text>
         {right ?? <Text style={styles.settingArrow}>›</Text>}
       </TouchableOpacity>
@@ -41,7 +43,7 @@ function ToggleRow({ icon, label, value, onToggle, last }) {
   return (
     <>
       <View style={styles.settingRow}>
-        <Text style={styles.settingIcon}>{icon}</Text>
+        <Icon name={icon} size={18} color={colors.text} />
         <Text style={[styles.settingLabel, { flex: 1 }]}>{label}</Text>
         <Switch
           value={value}
@@ -88,13 +90,7 @@ export default function SettingsScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.heading}>Settings</Text>
-        <View style={{ width: 60 }} />
-      </View>
+      <ScreenHeader title="Settings" onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
@@ -131,29 +127,29 @@ export default function SettingsScreen({ navigation }) {
 
         {/* Notifications */}
         <Section title="Notifications">
-          <ToggleRow icon="💸" label="Royalty earnings"    value={notifRoyalty}  onToggle={setNotifRoyalty}  />
-          <ToggleRow icon="✅" label="Upload approvals"    value={notifApproval} onToggle={setNotifApproval} />
-          <ToggleRow icon="📊" label="Weekly summary"      value={notifWeekly}   onToggle={setNotifWeekly}   />
-          <ToggleRow icon="📋" label="New task alerts"     value={notifTask}     onToggle={setNotifTask}     last />
+          <ToggleRow icon="coins"       label="Royalty earnings"    value={notifRoyalty}  onToggle={setNotifRoyalty}  />
+          <ToggleRow icon="checkCircle" label="Upload approvals"    value={notifApproval} onToggle={setNotifApproval} />
+          <ToggleRow icon="barChart"    label="Weekly summary"      value={notifWeekly}   onToggle={setNotifWeekly}   />
+          <ToggleRow icon="checkSquare" label="New task alerts"     value={notifTask}     onToggle={setNotifTask}     last />
         </Section>
 
         {/* Account */}
         <Section title="Account">
-          <SettingRow icon="🔑" label="Change Password" onPress={() => Alert.alert('Coming Soon', 'Password change will be available soon.')} />
-          <SettingRow icon="📧" label="Update Email / Phone" onPress={() => Alert.alert('Coming Soon', 'Contact support to update your login.')} last />
+          <SettingRow icon="lock" label="Change Password" onPress={() => Alert.alert('Coming Soon', 'Password change will be available soon.')} />
+          <SettingRow icon="mail" label="Update Email / Phone" onPress={() => Alert.alert('Coming Soon', 'Contact support to update your login.')} last />
         </Section>
 
         {/* Legal */}
         <Section title="Legal & Support">
-          <SettingRow icon="📄" label="Terms of Service"   onPress={() => Linking.openURL('https://quirk.app/terms')} />
-          <SettingRow icon="🔒" label="Privacy Policy"     onPress={() => Linking.openURL('https://quirk.app/privacy')} />
-          <SettingRow icon="❓" label="Help & Support"     onPress={() => Linking.openURL('mailto:support@quirk.app')} last />
+          <SettingRow icon="fileText"   label="Terms of Service"   onPress={() => Linking.openURL('https://quirk.app/terms')} />
+          <SettingRow icon="lock"       label="Privacy Policy"     onPress={() => Linking.openURL('https://quirk.app/privacy')} />
+          <SettingRow icon="helpCircle" label="Help & Support"     onPress={() => Linking.openURL('mailto:support@quirk.app')} last />
         </Section>
 
         {/* Danger zone */}
         <Section title="Danger Zone">
           <SettingRow
-            icon="🗑️"
+            icon="trash"
             label="Delete Account"
             onPress={() =>
               Alert.alert(
@@ -178,25 +174,21 @@ export default function SettingsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safe:          { flex: 1, backgroundColor: colors.background },
-  header:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingVertical: spacing.md },
-  back:          { ...typography.body, color: colors.textSecondary, width: 60 },
-  heading:       { ...typography.heading3, color: colors.text },
   content:       { paddingHorizontal: spacing.md, paddingBottom: spacing.xxl },
   section:       { marginBottom: spacing.lg },
   sectionTitle:  { ...typography.label, color: colors.textTertiary, marginBottom: spacing.sm },
-  sectionCard:   { backgroundColor: colors.surface, borderRadius: 14, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  sectionCard:   { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   settingRow:    { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.md, gap: spacing.md },
-  settingIcon:   { fontSize: 18, width: 24 },
   settingLabel:  { ...typography.body, color: colors.text },
   settingArrow:  { fontSize: 20, color: colors.textTertiary },
   dangerArrow:   { fontSize: 20, color: colors.red },
-  divider:       { height: 1, backgroundColor: colors.border, marginLeft: spacing.md + 24 + spacing.md },
+  divider:       { height: 1, backgroundColor: colors.border, marginLeft: spacing.md + 18 + spacing.md },
   tabRow:        { flexDirection: 'row', gap: spacing.xs, padding: spacing.md, paddingBottom: 0 },
   tab:           { flex: 1, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-  tabActive:     { backgroundColor: colors.primaryDim, borderColor: colors.primary },
+  tabActive:     { backgroundColor: colors.surfaceElevated, borderColor: colors.primary },
   tabText:       { ...typography.caption, color: colors.textSecondary },
-  tabTextActive: { color: colors.primary, fontWeight: '700' },
-  input:         { margin: spacing.md, backgroundColor: colors.background, borderRadius: 10, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.md, height: 48, ...typography.body, color: colors.text },
+  tabTextActive: { color: colors.text, fontWeight: '700' },
+  input:         { margin: spacing.md, backgroundColor: colors.background, borderRadius: 8, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.md, height: 48, ...typography.body, color: colors.text },
   payoutNote:    { ...typography.caption, color: colors.textTertiary, marginHorizontal: spacing.md, marginBottom: spacing.sm },
   saveBtn:       { marginHorizontal: spacing.md, marginBottom: spacing.md },
   version:       { ...typography.caption, color: colors.textTertiary, textAlign: 'center', paddingVertical: spacing.md },

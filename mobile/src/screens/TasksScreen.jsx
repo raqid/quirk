@@ -5,16 +5,18 @@ import {
 } from 'react-native';
 import TaskCard from '../components/TaskCard';
 import EmptyState from '../components/EmptyState';
+import Skeleton from '../components/Skeleton';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { fetchTasks, fetchTaskCategories } from '../services/api';
 
 const TYPE_FILTERS = [
-  { key: 'all',   label: 'All',   icon: '⚡' },
-  { key: 'photo', label: 'Photo', icon: '📷' },
-  { key: 'video', label: 'Video', icon: '🎥' },
-  { key: 'audio', label: 'Audio', icon: '🎙️' },
+  { key: 'all',   label: 'All',   iconName: null },
+  { key: 'photo', label: 'Photo', iconName: 'camera' },
+  { key: 'video', label: 'Video', iconName: 'video' },
+  { key: 'audio', label: 'Audio', iconName: 'mic' },
 ];
 
 export default function TasksScreen({ navigation }) {
@@ -25,6 +27,7 @@ export default function TasksScreen({ navigation }) {
   const [search,     setSearch]     = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -38,7 +41,10 @@ export default function TasksScreen({ navigation }) {
       ]);
       if (tasksRes.status === 'fulfilled') setTasks(tasksRes.value?.tasks || []);
       if (catsRes.status  === 'fulfilled') setCategories(catsRes.value?.categories || []);
-    } catch {}
+      setError(false);
+    } catch {
+      setError(true);
+    }
   }, [typeFilter, catFilter]);
 
   useEffect(() => { loadData().finally(() => setLoading(false)); }, [loadData]);
@@ -78,7 +84,7 @@ export default function TasksScreen({ navigation }) {
 
             {/* Search */}
             <View style={styles.searchRow}>
-              <Text style={styles.searchIcon}>🔍</Text>
+              <Icon name="search" size={16} color={colors.textTertiary} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search tasks…"
@@ -89,7 +95,7 @@ export default function TasksScreen({ navigation }) {
               />
               {search.length > 0 && (
                 <TouchableOpacity onPress={() => setSearch('')}>
-                  <Text style={styles.clearSearch}>✕</Text>
+                  <Icon name="x" size={14} color={colors.textTertiary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -103,7 +109,13 @@ export default function TasksScreen({ navigation }) {
                   onPress={() => { setTypeFilter(f.key); setCatFilter(''); }}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.typeChipIcon}>{f.icon}</Text>
+                  {f.iconName && (
+                    <Icon
+                      name={f.iconName}
+                      size={14}
+                      color={typeFilter === f.key ? colors.ctaText : colors.textSecondary}
+                    />
+                  )}
                   <Text style={[styles.typeChipText, typeFilter === f.key && styles.typeChipTextActive]}>{f.label}</Text>
                 </TouchableOpacity>
               ))}
@@ -137,7 +149,10 @@ export default function TasksScreen({ navigation }) {
             {hotTasks.length > 0 && !search && (
               <View style={styles.hotSection}>
                 <View style={styles.hotHeader}>
-                  <Text style={styles.sectionTitle}>🔥 Hot Right Now</Text>
+                  <View style={styles.hotTitleRow}>
+                    <Icon name="flame" size={16} color={colors.text} />
+                    <Text style={styles.sectionTitle}> Hot Right Now</Text>
+                  </View>
                   <Text style={styles.hotSub}>High pay, limited spots</Text>
                 </View>
                 {hotTasks.map((task) => (
@@ -149,8 +164,25 @@ export default function TasksScreen({ navigation }) {
               </View>
             )}
 
-            {filtered.length === 0 && !loading && (
-              <EmptyState icon="📋" title="No tasks found" subtitle="Try a different filter or check back soon" />
+            {loading && (
+              <View style={{ paddingHorizontal: spacing.md, gap: spacing.sm }}>
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} width={'100%'} height={100} borderRadius={14} />
+                ))}
+              </View>
+            )}
+
+            {error && !loading && (
+              <View style={styles.errorCard}>
+                <Text style={styles.errorText}>Could not load tasks</Text>
+                <TouchableOpacity style={styles.retryBtn} onPress={onRefresh}>
+                  <Text style={styles.retryText}>Retry</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {!error && filtered.length === 0 && !loading && (
+              <EmptyState icon="clipboard" title="No tasks found" subtitle="Try a different filter or check back soon" />
             )}
           </View>
         }
@@ -164,28 +196,30 @@ const styles = StyleSheet.create({
   safe:               { flex: 1, backgroundColor: colors.background },
   list:               { paddingBottom: spacing.xxl },
   heading:            { ...typography.heading2, color: colors.text, paddingHorizontal: spacing.md, paddingTop: spacing.md, marginBottom: spacing.md },
-  searchRow:          { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginHorizontal: spacing.md, paddingHorizontal: spacing.sm, height: 44, gap: spacing.xs, marginBottom: spacing.sm },
-  searchIcon:         { fontSize: 16 },
+  searchRow:          { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 8, borderWidth: 1, borderColor: colors.border, marginHorizontal: spacing.md, paddingHorizontal: spacing.sm, height: 44, gap: spacing.xs, marginBottom: spacing.sm },
   searchInput:        { flex: 1, ...typography.body, color: colors.text },
-  clearSearch:        { fontSize: 14, color: colors.textTertiary, paddingHorizontal: spacing.xs },
   typeScroll:         { marginBottom: spacing.sm },
   typeScrollContent:  { paddingHorizontal: spacing.md, gap: spacing.xs },
-  typeChip:           { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  typeChipActive:     { backgroundColor: colors.primary, borderColor: colors.primary },
-  typeChipIcon:       { fontSize: 14 },
+  typeChip:           { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  typeChipActive:     { backgroundColor: colors.ctaBackground, borderColor: colors.ctaBackground },
   typeChipText:       { ...typography.caption, color: colors.textSecondary, fontWeight: '600' },
-  typeChipTextActive: { color: colors.background },
+  typeChipTextActive: { color: colors.ctaText },
   catScroll:          { marginBottom: spacing.md },
   catScrollContent:   { paddingHorizontal: spacing.md, gap: spacing.xs },
-  catChip:            { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  catChipActive:      { backgroundColor: colors.primaryDim, borderColor: colors.primary },
+  catChip:            { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  catChipActive:      { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight },
   catChipText:        { ...typography.caption, color: colors.textSecondary },
-  catChipTextActive:  { color: colors.primary, fontWeight: '600' },
+  catChipTextActive:  { color: colors.text, fontWeight: '600' },
   catCount:           { ...typography.caption, color: colors.textTertiary },
   hotSection:         { paddingHorizontal: spacing.md },
   hotHeader:          { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: spacing.sm },
+  hotTitleRow:        { flexDirection: 'row', alignItems: 'center' },
   sectionTitle:       { ...typography.body, color: colors.text, fontWeight: '700' },
   hotSub:             { ...typography.caption, color: colors.amber },
   allTasksLabel:      { ...typography.body, color: colors.text, fontWeight: '700', marginTop: spacing.lg, marginBottom: spacing.sm },
   taskWrap:           { paddingHorizontal: spacing.md },
+  errorCard:          { alignItems: 'center', paddingVertical: spacing.xl, paddingHorizontal: spacing.md },
+  errorText:          { ...typography.body, color: colors.textSecondary, marginBottom: spacing.sm },
+  retryBtn:           { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  retryText:          { ...typography.body, color: colors.text, fontWeight: '600' },
 });

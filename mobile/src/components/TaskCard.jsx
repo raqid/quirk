@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import Card from './Card';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import { formatCurrency, formatDeadline } from '../utils/formatting';
 
-const TYPE_ICONS = { photo: '📷', video: '🎥', audio: '🎙️' };
+const TYPE_ICONS = { photo: 'camera', video: 'video', audio: 'mic' };
 
 export default function TaskCard({ task, onPress, compact }) {
   const fill = Math.round((task.quantity_filled / task.quantity_needed) * 100);
@@ -13,9 +15,9 @@ export default function TaskCard({ task, onPress, compact }) {
   const spotsLeft = task.quantity_needed - task.quantity_filled;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <Card onPress={onPress} style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.icon}>{TYPE_ICONS[task.data_type]}</Text>
+        <Icon name={TYPE_ICONS[task.data_type] || 'camera'} size={22} color={colors.textSecondary} />
         <View style={styles.headerText}>
           <Text style={styles.title} numberOfLines={2}>{task.title}</Text>
           <Text style={styles.category}>{task.category}</Text>
@@ -38,30 +40,27 @@ export default function TaskCard({ task, onPress, compact }) {
           <View style={styles.footer}>
             <Text style={styles.spots}>{spotsLeft.toLocaleString()} spots left</Text>
             <Text style={styles.deadline}>{formatDeadline(task.deadline)}</Text>
-            {task.is_hot && <Text style={styles.hot}>🔥 Hot</Text>}
+            {task.is_hot && (
+              <View style={styles.hotBadge}>
+                <Icon name="flame" size={12} color={colors.amber} />
+                <Text style={styles.hot}>Hot</Text>
+              </View>
+            )}
           </View>
         </>
       )}
-    </TouchableOpacity>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
+  card: { marginBottom: spacing.sm },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  icon: { fontSize: 24, marginTop: 2 },
   headerText: { flex: 1 },
   title: { ...typography.body, color: colors.text, fontWeight: '600', marginBottom: 2 },
   category: { ...typography.caption, color: colors.textSecondary },
   payBadge: { alignItems: 'flex-end' },
-  payAmount: { ...typography.body, color: colors.primary, fontWeight: '700' },
+  payAmount: { ...typography.body, color: colors.text, fontWeight: '700' },
   payLabel: { ...typography.caption, color: colors.textTertiary },
   fillRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
   fillBg: { flex: 1, height: 4, backgroundColor: colors.border, borderRadius: 2, overflow: 'hidden' },
@@ -70,5 +69,6 @@ const styles = StyleSheet.create({
   footer: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
   spots: { ...typography.caption, color: colors.textSecondary },
   deadline: { ...typography.caption, color: colors.textTertiary },
-  hot: { ...typography.caption, marginLeft: 'auto' },
+  hotBadge: { flexDirection: 'row', alignItems: 'center', gap: 2, marginLeft: 'auto' },
+  hot: { ...typography.caption, color: colors.amber },
 });

@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import TaskCard from '../components/TaskCard';
 import RoyaltyEvent from '../components/RoyaltyEvent';
 import EarningsBar from '../components/EarningsBar';
 import TierProgress from '../components/TierProgress';
+import Skeleton from '../components/Skeleton';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -64,6 +67,7 @@ export default function HomeScreen({ navigation }) {
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [loading,       setLoading]       = useState(true);
   const [refreshing,    setRefreshing]    = useState(false);
+  const [error,         setError]         = useState(false);
 
   const last7Days = useMemo(() => buildLast7Days(royalties), [royalties]);
 
@@ -83,10 +87,19 @@ export default function HomeScreen({ navigation }) {
       if (tasksR.status === 'fulfilled') setTasks(tasksR.value?.tasks || []);
       if (royR.status   === 'fulfilled') setRoyalties(royR.value?.events || []);
       if (notifR.status === 'fulfilled') setUnreadCount(notifR.value?.unread_count || 0);
-    } catch {}
+      setError(false);
+    } catch {
+      setError(true);
+    }
   };
 
   useEffect(() => { loadData().finally(() => setLoading(false)); }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!loading) loadData();
+    }, [loading])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -104,7 +117,33 @@ export default function HomeScreen({ navigation }) {
   if (loading) {
     return (
       <SafeAreaView style={styles.safe}>
-        <ActivityIndicator color={colors.primary} style={{ flex: 1 }} />
+        <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <View>
+              <Skeleton width={100} height={14} borderRadius={4} />
+              <Skeleton width={140} height={22} borderRadius={4} style={{ marginTop: 6 }} />
+            </View>
+            <Skeleton width={36} height={36} borderRadius={18} />
+          </View>
+          <View style={styles.heroCard}>
+            <Skeleton width={80} height={12} borderRadius={4} />
+            <Skeleton width={160} height={32} borderRadius={4} style={{ marginTop: 8 }} />
+            <Skeleton width={120} height={12} borderRadius={4} style={{ marginTop: 8 }} />
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
+              <Skeleton width={'100%'} height={40} borderRadius={10} style={{ flex: 1 }} />
+              <Skeleton width={'100%'} height={40} borderRadius={10} style={{ flex: 1 }} />
+              <Skeleton width={'100%'} height={40} borderRadius={10} style={{ flex: 1 }} />
+            </View>
+          </View>
+          <View style={styles.px}>
+            <Skeleton width={'100%'} height={60} borderRadius={12} />
+          </View>
+          <View style={styles.section}>
+            <Skeleton width={140} height={16} borderRadius={4} />
+            <Skeleton width={'100%'} height={100} borderRadius={14} style={{ marginTop: spacing.sm }} />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -127,7 +166,7 @@ export default function HomeScreen({ navigation }) {
               style={styles.bellBtn}
               onPress={() => navigation.navigate('Notifications')}
             >
-              <Text style={styles.bellIcon}>🔔</Text>
+              <Icon name="bell" size={20} color={colors.text} />
               {unreadCount > 0 && (
                 <View style={styles.bellBadge}>
                   <Text style={styles.bellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -142,6 +181,15 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </View>
+
+        {error && (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>Could not load data</Text>
+            <TouchableOpacity style={styles.retryBtn} onPress={onRefresh}>
+              <Text style={styles.retryText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Hero earnings card */}
         <View style={styles.heroCard}>
@@ -159,7 +207,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.heroRight}>
               {stats.streak_days > 0 && (
                 <View style={styles.streakBadge}>
-                  <Text style={styles.streakFire}>🔥</Text>
+                  <Icon name="flame" size={18} color={colors.textSecondary} />
                   <Text style={styles.streakNum}>{stats.streak_days}</Text>
                   <Text style={styles.streakLabel}>day{stats.streak_days !== 1 ? 's' : ''}</Text>
                 </View>
@@ -197,7 +245,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Top Task Right Now</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Tasks')}>
-                <Text style={styles.seeAll}>See all →</Text>
+                <Text style={styles.seeAll}>See all</Text>
               </TouchableOpacity>
             </View>
             <TaskCard
@@ -227,7 +275,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent Royalties</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Earn')}>
-                <Text style={styles.seeAll}>See all →</Text>
+                <Text style={styles.seeAll}>See all</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.royaltyCard}>
@@ -244,12 +292,12 @@ export default function HomeScreen({ navigation }) {
           onPress={() => navigation.navigate('Capture')}
           activeOpacity={0.85}
         >
-          <Text style={styles.captureCtaIcon}>📷</Text>
+          <Icon name="camera" size={28} color={colors.text} />
           <View style={{ flex: 1 }}>
             <Text style={styles.captureCtaTitle}>Ready to capture?</Text>
             <Text style={styles.captureCtaSub}>Upload media and start earning today</Text>
           </View>
-          <Text style={styles.captureCtaArrow}>→</Text>
+          <Icon name="chevronRight" size={18} color={colors.textTertiary} />
         </TouchableOpacity>
 
         {/* Leaderboard nudge */}
@@ -258,12 +306,12 @@ export default function HomeScreen({ navigation }) {
           onPress={() => navigation.navigate('Leaderboard')}
           activeOpacity={0.8}
         >
-          <Text style={styles.lbNudgeIcon}>🏆</Text>
+          <Icon name="trophy" size={24} color={colors.text} />
           <View style={{ flex: 1 }}>
             <Text style={styles.lbNudgeTitle}>View Leaderboard</Text>
             <Text style={styles.lbNudgeSub}>See where you rank against other contributors</Text>
           </View>
-          <Text style={styles.lbNudgeArrow}>→</Text>
+          <Icon name="chevronRight" size={18} color={colors.textTertiary} />
         </TouchableOpacity>
 
         <View style={{ height: spacing.xxl }} />
@@ -279,12 +327,11 @@ const styles = StyleSheet.create({
   name:           { ...typography.heading3, color: colors.text },
   headerRight:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   bellBtn:        { position: 'relative', width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  bellIcon:       { fontSize: 20 },
   bellBadge:      { position: 'absolute', top: 0, right: 0, width: 16, height: 16, borderRadius: 8, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
   bellBadgeText:  { fontSize: 9, color: '#fff', fontWeight: '700' },
-  avatar:         { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primaryDim, borderWidth: 1.5, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  avatarText:     { ...typography.bodySmall, color: colors.primary, fontWeight: '700' },
-  heroCard:       { margin: spacing.md, backgroundColor: colors.surface, borderRadius: 18, borderWidth: 1, borderColor: colors.border, padding: spacing.md, gap: spacing.md },
+  avatar:         { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  avatarText:     { ...typography.bodySmall, color: colors.text, fontWeight: '700' },
+  heroCard:       { margin: spacing.md, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.md, gap: spacing.md },
   heroTop:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   heroLabel:      { ...typography.caption, color: colors.textTertiary, marginBottom: 4 },
   heroAmount:     { ...typography.heading1, color: colors.text },
@@ -292,30 +339,29 @@ const styles = StyleSheet.create({
   trendBadge:     { ...typography.caption, fontWeight: '700' },
   trendLabel:     { ...typography.caption, color: colors.textTertiary },
   heroRight:      { alignItems: 'flex-end' },
-  streakBadge:    { backgroundColor: colors.amber + '20', borderWidth: 1, borderColor: colors.amber + '60', borderRadius: 12, paddingHorizontal: spacing.sm, paddingVertical: 6, alignItems: 'center' },
-  streakFire:     { fontSize: 18 },
-  streakNum:      { ...typography.heading3, color: colors.amber, lineHeight: 22 },
-  streakLabel:    { ...typography.caption, color: colors.amber },
+  streakBadge:    { backgroundColor: colors.surfaceElevated, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: spacing.sm, paddingVertical: 6, alignItems: 'center' },
+  streakNum:      { ...typography.heading3, color: colors.textSecondary, lineHeight: 22 },
+  streakLabel:    { ...typography.caption, color: colors.textSecondary },
   heroStats:      { flexDirection: 'row', gap: spacing.sm },
   chip:           { flex: 1, backgroundColor: colors.background, borderRadius: 10, borderWidth: 1, borderColor: colors.border, padding: spacing.sm, alignItems: 'center' },
-  chipHighlight:  { backgroundColor: colors.primaryDim, borderColor: colors.primary + '40' },
+  chipHighlight:  { backgroundColor: colors.surfaceElevated, borderColor: colors.borderLight },
   chipValue:      { ...typography.body, color: colors.text, fontWeight: '700' },
-  chipValueHL:    { color: colors.primary },
+  chipValueHL:    { color: colors.text },
   chipLabel:      { ...typography.caption, color: colors.textTertiary, marginTop: 1 },
   px:             { paddingHorizontal: spacing.md, marginBottom: spacing.md },
   section:        { paddingHorizontal: spacing.md, marginTop: spacing.lg },
   sectionHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
   sectionTitle:   { ...typography.body, color: colors.text, fontWeight: '700' },
-  seeAll:         { ...typography.caption, color: colors.primary },
-  royaltyCard:    { backgroundColor: colors.surface, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
-  captureCta:     { flexDirection: 'row', alignItems: 'center', gap: spacing.md, margin: spacing.md, marginTop: spacing.lg, backgroundColor: colors.primaryDim, borderRadius: 14, borderWidth: 1, borderColor: colors.primary + '44', padding: spacing.md },
-  captureCtaIcon: { fontSize: 28 },
+  seeAll:         { ...typography.caption, color: colors.textSecondary },
+  royaltyCard:    { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
+  captureCta:     { flexDirection: 'row', alignItems: 'center', gap: spacing.md, margin: spacing.md, marginTop: spacing.lg, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
   captureCtaTitle:{ ...typography.body, color: colors.text, fontWeight: '600' },
   captureCtaSub:  { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-  captureCtaArrow:{ fontSize: 18, color: colors.primary },
-  lbNudge:        { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginHorizontal: spacing.md, backgroundColor: colors.surface, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
-  lbNudgeIcon:    { fontSize: 24 },
+  lbNudge:        { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginHorizontal: spacing.md, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.md },
   lbNudgeTitle:   { ...typography.bodySmall, color: colors.text, fontWeight: '600' },
   lbNudgeSub:     { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
-  lbNudgeArrow:   { fontSize: 18, color: colors.textTertiary },
+  errorCard:      { alignItems: 'center', paddingVertical: spacing.xl, margin: spacing.md },
+  errorText:      { ...typography.body, color: colors.textSecondary, marginBottom: spacing.sm },
+  retryBtn:       { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  retryText:      { ...typography.body, color: colors.text, fontWeight: '600' },
 });

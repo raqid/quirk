@@ -4,6 +4,8 @@ import {
   FlatList, TouchableOpacity, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { fetchLeaderboard } from '../services/api';
+import ScreenHeader from '../components/ScreenHeader';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -16,15 +18,15 @@ const PERIODS  = [
   { key: 'all',   label: 'All Time'   },
 ];
 
-const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' };
+const MEDAL_OPACITY = { 1: 1.0, 2: 0.7, 3: 0.5 };
 
 function LeaderboardRow({ item }) {
-  const medal = MEDALS[item.rank];
+  const medalOpacity = MEDAL_OPACITY[item.rank];
   return (
     <View style={[styles.row, item.is_me && styles.rowMe]}>
       <View style={styles.rankWrap}>
-        {medal
-          ? <Text style={styles.medal}>{medal}</Text>
+        {medalOpacity != null
+          ? <Icon name="medal" size={22} color={colors.text} style={{ opacity: medalOpacity }} />
           : <Text style={[styles.rank, item.is_me && styles.rankMe]}>#{item.rank}</Text>
         }
       </View>
@@ -80,13 +82,7 @@ export default function LeaderboardScreen({ navigation }) {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.heading}>Leaderboard</Text>
-        <View style={{ width: 60 }} />
-      </View>
+      <ScreenHeader title="Leaderboard" onBack={() => navigation.goBack()} />
 
       {myRank && (
         <View style={styles.myRankBanner}>
@@ -115,7 +111,7 @@ export default function LeaderboardScreen({ navigation }) {
             renderItem={({ item }) => <LeaderboardRow item={item} />}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
             ListEmptyComponent={
-              <EmptyState icon="🏆" title="No data yet" subtitle="Earn royalties to appear on the leaderboard" />
+              <EmptyState icon="trophy" title="No data yet" subtitle="Earn royalties to appear on the leaderboard" />
             }
             contentContainerStyle={data.length === 0 ? { flex: 1 } : styles.list}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -128,33 +124,29 @@ export default function LeaderboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safe:           { flex: 1, backgroundColor: colors.background },
-  header:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingVertical: spacing.md },
-  back:           { ...typography.body, color: colors.textSecondary, width: 60 },
-  heading:        { ...typography.heading3, color: colors.text },
-  myRankBanner:   { backgroundColor: colors.primaryDim, borderWidth: 1, borderColor: colors.primary + '40', borderRadius: 10, marginHorizontal: spacing.md, marginBottom: spacing.sm, padding: spacing.sm, alignItems: 'center' },
-  myRankText:     { ...typography.bodySmall, color: colors.textSecondary },
-  myRankNum:      { color: colors.primary, fontWeight: '700' },
+  myRankBanner:   { backgroundColor: colors.surfaceElevated, borderWidth: 1, borderColor: colors.border, borderRadius: 12, marginHorizontal: spacing.md, marginBottom: spacing.sm, padding: spacing.sm, alignItems: 'center' },
+  myRankText:     { ...typography.bodySmall, color: colors.text },
+  myRankNum:      { color: colors.text, fontWeight: '700' },
   periodRow:      { flexDirection: 'row', gap: spacing.xs, paddingHorizontal: spacing.md, marginBottom: spacing.md },
-  periodBtn:      { flex: 1, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center' },
-  periodBtnActive:{ backgroundColor: colors.primary, borderColor: colors.primary },
+  periodBtn:      { flex: 1, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center' },
+  periodBtnActive:{ backgroundColor: colors.ctaBackground, borderColor: colors.ctaBackground },
   periodText:     { ...typography.caption, color: colors.textSecondary },
-  periodTextActive:{ color: colors.background, fontWeight: '700' },
+  periodTextActive:{ color: colors.ctaText, fontWeight: '700' },
   list:           { paddingHorizontal: spacing.md, paddingBottom: spacing.xxl },
   row:            { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm, backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: spacing.sm, marginBottom: spacing.xs },
-  rowMe:          { borderWidth: 1, borderColor: colors.primary + '60', backgroundColor: colors.primaryDim },
+  rowMe:          { borderWidth: 1, borderColor: colors.borderLight, backgroundColor: colors.surfaceElevated },
   rankWrap:       { width: 36, alignItems: 'center' },
-  medal:          { fontSize: 22 },
   rank:           { ...typography.caption, color: colors.textTertiary, fontWeight: '600' },
-  rankMe:         { color: colors.primary },
+  rankMe:         { color: colors.text },
   avatar:         { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   avatarMe:       { backgroundColor: colors.primaryDim, borderWidth: 1, borderColor: colors.primary },
   avatarText:     { ...typography.body, color: colors.textSecondary, fontWeight: '700' },
-  avatarTextMe:   { color: colors.primary },
+  avatarTextMe:   { color: colors.text },
   info:           { flex: 1 },
   name:           { ...typography.bodySmall, color: colors.text, fontWeight: '500' },
-  nameMe:         { color: colors.primary, fontWeight: '700' },
+  nameMe:         { color: colors.text, fontWeight: '700' },
   country:        { ...typography.caption, color: colors.textTertiary },
   amount:         { ...typography.bodySmall, color: colors.text, fontWeight: '700' },
-  amountMe:       { color: colors.primary },
+  amountMe:       { color: colors.text },
   separator:      { height: spacing.xs },
 });

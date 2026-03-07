@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Icon } from '../utils/icons';
+import Card from './Card';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 
 const TIER_META = {
-  bronze:   { label: 'Bronze',   icon: '🥉', color: '#CD7F32', next: 'Silver'   },
-  silver:   { label: 'Silver',   icon: '🥈', color: '#A8A9AD', next: 'Gold'     },
-  gold:     { label: 'Gold',     icon: '🥇', color: '#FFD700', next: 'Platinum' },
-  platinum: { label: 'Platinum', icon: '💎', color: '#00E676', next: null       },
+  bronze:   { label: 'Bronze',   iconName: 'medal', color: colors.textSecondary,  next: 'Silver'   },
+  silver:   { label: 'Silver',   iconName: 'medal', color: colors.textSecondary,  next: 'Gold'     },
+  gold:     { label: 'Gold',     iconName: 'medal', color: colors.amber,          next: 'Platinum' },
+  platinum: { label: 'Platinum', iconName: 'gem',   color: colors.primary,        next: null       },
 };
 
 export default function TierProgress({ tier = 'bronze', nextTier, progress = 0, uploadsNeeded, earnedNeeded }) {
@@ -16,9 +18,9 @@ export default function TierProgress({ tier = 'bronze', nextTier, progress = 0, 
   const nextMeta = TIER_META[nextTier] || null;
 
   return (
-    <View style={styles.container}>
+    <Card>
       <View style={styles.row}>
-        <Text style={styles.icon}>{meta.icon}</Text>
+        <Icon name={meta.iconName} size={28} color={meta.color} />
         <View style={styles.info}>
           <View style={styles.labelRow}>
             <Text style={[styles.tierName, { color: meta.color }]}>{meta.label}</Text>
@@ -35,18 +37,12 @@ export default function TierProgress({ tier = 'bronze', nextTier, progress = 0, 
         </View>
         <Text style={styles.pct}>{nextMeta ? `${progress}%` : 'Max'}</Text>
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface, borderRadius: 14,
-    borderWidth: 1, borderColor: colors.border,
-    padding: spacing.md,
-  },
   row:       { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  icon:      { fontSize: 28 },
   info:      { flex: 1 },
   labelRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
   tierName:  { ...typography.body, fontWeight: '700' },

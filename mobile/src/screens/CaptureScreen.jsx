@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, TouchableOpacity, Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Audio } from 'expo-av';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -11,12 +13,13 @@ import { formatCurrency } from '../utils/formatting';
 import { fetchTasks } from '../services/api';
 
 const TYPES = [
-  { key: 'photo', label: 'Photo', icon: '📷', desc: 'JPG, PNG, HEIC' },
-  { key: 'video', label: 'Video', icon: '🎥', desc: 'MP4, MOV, up to 60s' },
-  { key: 'audio', label: 'Audio', icon: '🎙️', desc: 'MP3, WAV, M4A' },
+  { key: 'photo', label: 'Photo', iconName: 'camera', desc: 'JPG, PNG, HEIC' },
+  { key: 'video', label: 'Video', iconName: 'video',  desc: 'MP4, MOV, up to 60s' },
+  { key: 'audio', label: 'Audio', iconName: 'mic',    desc: 'MP3, WAV, M4A' },
 ];
 
-export default function CaptureScreen({ navigation }) {
+export default function CaptureScreen({ navigation, route }) {
+  const incomingTaskId = route.params?.taskId;
   const [selectedType, setSelectedType] = useState('photo');
   const [linkedTask,   setLinkedTask]   = useState(null);
   const [tasks,        setTasks]        = useState([]);
@@ -26,11 +29,20 @@ export default function CaptureScreen({ navigation }) {
     let cancelled = false;
     setLoadingTasks(true);
     fetchTasks({ status: 'active', limit: 5 })
-      .then((res) => { if (!cancelled) setTasks(res?.tasks || []); })
+      .then((res) => {
+        if (cancelled) return;
+        const loaded = res?.tasks || [];
+        setTasks(loaded);
+        if (incomingTaskId) {
+          setLinkedTask(incomingTaskId);
+          const match = loaded.find((t) => t.id === incomingTaskId);
+          if (match) setSelectedType(match.data_type);
+        }
+      })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoadingTasks(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [incomingTaskId]);
 
   const activeTasks = tasks.filter((t) => t.data_type === selectedType).slice(0, 3);
 
@@ -64,8 +76,61 @@ export default function CaptureScreen({ navigation }) {
     }
   };
 
-  const handleAudio = () => {
-    navigation.navigate('UploadMetadata', { asset: { type: 'audio' }, type: 'audio', taskId: linkedTask });
+  const recordingRef = useRef(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const durationInterval = useRef(null);
+
+  const handleAudioStart = async () => {
+    try {
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Microphone access is required to record audio.');
+        return;
+      }
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      recordingRef.current = recording;
+      setIsRecording(true);
+      setRecordingDuration(0);
+      durationInterval.current = setInterval(() => {
+        setRecordingDuration((d) => d + 1);
+      }, 1000);
+    } catch (err) {
+      Alert.alert('Error', 'Could not start recording.');
+    }
+  };
+
+  const handleAudioStop = async () => {
+    if (!recordingRef.current) return;
+    clearInterval(durationInterval.current);
+    setIsRecording(false);
+    try {
+      await recordingRef.current.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+      const uri = recordingRef.current.getURI();
+      recordingRef.current = null;
+      if (uri) {
+        navigation.navigate('UploadMetadata', {
+          asset: { uri, type: 'audio' },
+          type: 'audio',
+          taskId: linkedTask,
+        });
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not stop recording.');
+    }
+  };
+
+  const formatDuration = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   };
 
   return (
@@ -84,7 +149,12 @@ export default function CaptureScreen({ navigation }) {
               onPress={() => { setSelectedType(t.key); setLinkedTask(null); }}
               activeOpacity={0.8}
             >
-              <Text style={styles.typeIcon}>{t.icon}</Text>
+              <Icon
+                name={t.iconName}
+                size={24}
+                color={selectedType === t.key ? colors.text : colors.textSecondary}
+                style={{ marginBottom: 4 }}
+              />
               <Text style={[styles.typeLabel, selectedType === t.key && styles.typeLabelActive]}>{t.label}</Text>
               <Text style={styles.typeDesc}>{t.desc}</Text>
             </TouchableOpacity>
@@ -93,7 +163,7 @@ export default function CaptureScreen({ navigation }) {
 
         {/* Earnings info */}
         <View style={styles.earningsInfo}>
-          <Text style={styles.earningsIcon}>💡</Text>
+          <Icon name="lightbulb" size={16} color={colors.textSecondary} style={{ marginTop: 1 }} />
           <Text style={styles.earningsText}>
             Earn upfront for each upload. Link to a task below to maximize your payout.
           </Text>
@@ -136,17 +206,28 @@ export default function CaptureScreen({ navigation }) {
           {selectedType !== 'audio' ? (
             <>
               <TouchableOpacity style={styles.actionBtn} onPress={handleCamera} activeOpacity={0.85}>
-                <Text style={styles.actionIcon}>📷</Text>
+                <Icon name="camera" size={22} color={colors.ctaText} />
                 <Text style={styles.actionLabel}>Open Camera</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.actionBtn, styles.actionBtnSecondary]} onPress={handleLibrary} activeOpacity={0.85}>
-                <Text style={styles.actionIcon}>🖼️</Text>
+                <Icon name="image" size={22} color={colors.text} />
                 <Text style={[styles.actionLabel, styles.actionLabelSecondary]}>Choose from Library</Text>
               </TouchableOpacity>
             </>
+          ) : isRecording ? (
+            <View style={styles.recordingContainer}>
+              <View style={styles.recordingIndicator}>
+                <View style={styles.recordingDot} />
+                <Text style={styles.recordingTime}>{formatDuration(recordingDuration)}</Text>
+              </View>
+              <TouchableOpacity style={[styles.actionBtn, styles.stopBtn]} onPress={handleAudioStop} activeOpacity={0.85}>
+                <Icon name="ban" size={22} color={colors.ctaText} />
+                <Text style={[styles.actionLabel, styles.stopLabel]}>Stop Recording</Text>
+              </TouchableOpacity>
+            </View>
           ) : (
-            <TouchableOpacity style={styles.actionBtn} onPress={handleAudio} activeOpacity={0.85}>
-              <Text style={styles.actionIcon}>🎙️</Text>
+            <TouchableOpacity style={styles.actionBtn} onPress={handleAudioStart} activeOpacity={0.85}>
+              <Icon name="mic" size={22} color={colors.ctaText} />
               <Text style={styles.actionLabel}>Record Audio</Text>
             </TouchableOpacity>
           )}
@@ -162,14 +243,12 @@ const styles = StyleSheet.create({
   heading:           { ...typography.heading2, color: colors.text, marginBottom: spacing.xs },
   sub:               { ...typography.body, color: colors.textSecondary, marginBottom: spacing.lg },
   typeRow:           { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
-  typeCard:          { flex: 1, backgroundColor: colors.surface, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: spacing.md, alignItems: 'center' },
+  typeCard:          { flex: 1, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.md, alignItems: 'center' },
   typeCardActive:    { borderColor: colors.primary, backgroundColor: colors.primaryDim },
-  typeIcon:          { fontSize: 24, marginBottom: 4 },
   typeLabel:         { ...typography.body, color: colors.textSecondary, fontWeight: '600' },
-  typeLabelActive:   { color: colors.primary },
+  typeLabelActive:   { color: colors.text },
   typeDesc:          { ...typography.caption, color: colors.textTertiary, textAlign: 'center', marginTop: 2 },
-  earningsInfo:      { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, backgroundColor: colors.primaryDim, borderRadius: 12, borderWidth: 1, borderColor: colors.primary + '30', padding: spacing.sm, marginBottom: spacing.lg },
-  earningsIcon:      { fontSize: 16, marginTop: 1 },
+  earningsInfo:      { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.sm, marginBottom: spacing.lg },
   earningsText:      { ...typography.caption, color: colors.textSecondary, flex: 1, lineHeight: 18 },
   tasksSection:      { marginBottom: spacing.lg },
   tasksSectionTitle: { ...typography.body, color: colors.text, fontWeight: '600', marginBottom: 2 },
@@ -178,14 +257,19 @@ const styles = StyleSheet.create({
   taskRow:           { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: spacing.sm, marginBottom: spacing.xs },
   taskRowActive:     { borderColor: colors.primary, backgroundColor: colors.primaryDim },
   taskTitle:         { ...typography.bodySmall, color: colors.text, fontWeight: '500' },
-  taskPay:           { ...typography.caption, color: colors.primary, marginTop: 2 },
-  taskCheck:         { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  taskCheckText:     { color: colors.background, fontWeight: '700', fontSize: 13 },
+  taskPay:           { ...typography.caption, color: colors.text, marginTop: 2 },
+  taskCheck:         { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.ctaBackground, alignItems: 'center', justifyContent: 'center' },
+  taskCheckText:     { color: colors.ctaText, fontWeight: '700', fontSize: 13 },
   taskCheckEmpty:    { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: colors.border },
   actions:           { gap: spacing.sm },
-  actionBtn:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.primary, borderRadius: 14, height: 56 },
+  actionBtn:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.ctaBackground, borderRadius: 12, height: 56 },
   actionBtnSecondary:{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  actionIcon:        { fontSize: 22 },
-  actionLabel:       { ...typography.body, color: colors.background, fontWeight: '600' },
+  actionLabel:       { ...typography.body, color: colors.ctaText, fontWeight: '600' },
   actionLabelSecondary:{ color: colors.text },
+  recordingContainer:{ gap: spacing.sm },
+  recordingIndicator:{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
+  recordingDot:      { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.red },
+  recordingTime:     { ...typography.heading3, color: colors.red, fontVariant: ['tabular-nums'] },
+  stopBtn:           { backgroundColor: colors.red },
+  stopLabel:         { color: '#fff' },
 });

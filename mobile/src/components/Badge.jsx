@@ -8,7 +8,7 @@ const COLOR_MAP = {
   amber:  { bg: colors.amberDim,    text: colors.amber   },
   red:    { bg: colors.redDim,      text: colors.red     },
   blue:   { bg: colors.blueDim,     text: colors.blue    },
-  gray:   { bg: '#2A2A2A',          text: colors.textSecondary },
+  gray:   { bg: colors.surfaceElevated, text: colors.textSecondary },
 };
 
 export default function Badge({ label, color = 'gray', style }) {

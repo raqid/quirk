@@ -24,5 +24,5 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   company: { ...typography.bodySmall, color: colors.text, fontWeight: '500' },
   time: { ...typography.caption, color: colors.textTertiary },
-  amount: { ...typography.bodySmall, color: colors.primary, fontWeight: '600' },
+  amount: { ...typography.bodySmall, color: colors.text, fontWeight: '600' },
 });

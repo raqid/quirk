@@ -4,6 +4,7 @@ import {
   TextInput, TouchableOpacity,
 } from 'react-native';
 import Button from '../components/Button';
+import ScreenHeader from '../components/ScreenHeader';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -71,14 +72,9 @@ export default function OnboardingVerify({ navigation, route }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <ScreenHeader title="Enter code" onBack={() => navigation.goBack()} />
       <View style={styles.container}>
-        <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.heading}>Enter code</Text>
         <Text style={styles.sub}>We sent a 6-digit code to{'\n'}<Text style={styles.identifier}>{identifier}</Text></Text>
-        <Text style={styles.hint}>Tip: check Railway deploy logs to find your OTP until SMS is set up.</Text>
 
         <View style={styles.otpRow}>
           {digits.map((d, i) => (
@@ -119,15 +115,11 @@ export default function OnboardingVerify({ navigation, route }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, padding: spacing.lg },
-  back: { marginBottom: spacing.lg },
-  backText: { ...typography.body, color: colors.textSecondary },
-  heading: { ...typography.heading2, color: colors.text, marginBottom: spacing.xs },
   sub: { ...typography.body, color: colors.textSecondary, marginBottom: spacing.xs, lineHeight: 24 },
-  hint: { ...typography.caption, color: colors.textTertiary, marginBottom: spacing.xl, lineHeight: 18 },
   identifier: { color: colors.text, fontWeight: '600' },
   otpRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xl },
   otpBox: {
-    flex: 1, height: 56, borderRadius: 12,
+    flex: 1, height: 56, borderRadius: 8,
     borderWidth: 1, borderColor: colors.border,
     backgroundColor: colors.surface,
     textAlign: 'center',
@@ -137,6 +129,6 @@ const styles = StyleSheet.create({
   error: { ...typography.bodySmall, color: colors.red, marginBottom: spacing.sm },
   cta: { marginBottom: spacing.md },
   resendBtn: { alignItems: 'center' },
-  resend: { ...typography.body, color: colors.primary },
+  resend: { ...typography.body, color: colors.text },
   resendDisabled: { color: colors.textTertiary },
 });

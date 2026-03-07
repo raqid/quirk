@@ -5,6 +5,8 @@ import {
   Modal, FlatList, Animated,
 } from 'react-native';
 import Button from '../components/Button';
+import ScreenHeader from '../components/ScreenHeader';
+import { Icon } from '../utils/icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
@@ -12,7 +14,7 @@ import { formatCurrency } from '../utils/formatting';
 import { uploadAsset, fetchTasks } from '../services/api';
 
 const CATEGORIES = [
-  'Food & Cooking', 'Street & Market', 'Vehicles & Transport', 'Speech & Conversation',
+  'Egocentric & POV', 'Food & Cooking', 'Street & Market', 'Vehicles & Transport', 'Speech & Conversation',
   'Work & Industry', 'Handwriting & Text', 'Music & Sound', 'Nature & Agriculture',
   'People & Daily Life', 'Buildings & Architecture', 'Animals', 'Health & Medical',
   'Education & Reading', 'Sports & Recreation', 'Technology & Devices',
@@ -41,9 +43,9 @@ function PickerModal({ visible, title, data, selected, onSelect, onClose }) {
                 <TouchableOpacity style={styles.modalRow} onPress={() => onSelect(typeof item === 'string' ? item : item.id)}>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.modalRowText, isActive && styles.modalRowTextActive]}>{label}</Text>
-                    {subLabel && <Text style={styles.modalRowSub}>{subLabel}</Text>}
+                    {subLabel && <Text style={[styles.modalRowSub, isActive && styles.modalRowSubActive]}>{subLabel}</Text>}
                   </View>
-                  {isActive && <Text style={styles.modalCheck}>✓</Text>}
+                  {isActive && <Icon name="checkCircle" size={18} color={colors.text} />}
                 </TouchableOpacity>
               );
             }}
@@ -127,11 +129,11 @@ export default function UploadMetadataScreen({ navigation, route }) {
       <SafeAreaView style={styles.safe}>
         <StatusBar barStyle="light-content" backgroundColor={colors.background} />
         <View style={styles.centeredScreen}>
-          <Text style={styles.successEmoji}>🎉</Text>
+          <Icon name="checkCircle" size={64} color={colors.text} />
           <Text style={styles.successTitle}>Upload successful!</Text>
           <Text style={styles.successSub}>
             Your {type} is being reviewed.{'\n'}
-            Estimated pay: <Text style={{ color: colors.primary }}>{formatCurrency(pay)}</Text>
+            Estimated pay: <Text style={{ color: colors.text }}>{formatCurrency(pay)}</Text>
           </Text>
           <Button title="Upload Another"  onPress={() => navigation.goBack()}              style={styles.successBtn} />
           <Button title="Back to Home"    variant="secondary" onPress={() => navigation.navigate('Home')} style={styles.successBtn} />
@@ -147,7 +149,7 @@ export default function UploadMetadataScreen({ navigation, route }) {
       <SafeAreaView style={styles.safe}>
         <StatusBar barStyle="light-content" backgroundColor={colors.background} />
         <View style={styles.centeredScreen}>
-          <Text style={styles.uploadingEmoji}>📤</Text>
+          <Icon name="upload" size={48} color={colors.text} />
           <Text style={styles.uploadingTitle}>Uploading…</Text>
           <Text style={styles.uploadingPct}>{progress}%</Text>
           <View style={styles.progressTrack}>
@@ -163,18 +165,15 @@ export default function UploadMetadataScreen({ navigation, route }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <ScreenHeader title="Add details" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.heading}>Add details</Text>
 
         {/* Preview */}
         {asset?.uri && (type === 'photo' || type === 'video') ? (
           <Image source={{ uri: asset.uri }} style={styles.preview} resizeMode="cover" />
         ) : (
           <View style={[styles.preview, styles.previewPlaceholder]}>
-            <Text style={{ fontSize: 48 }}>{type === 'audio' ? '🎙️' : '🎥'}</Text>
+            <Icon name={type === 'audio' ? 'mic' : 'video'} size={48} color={colors.textSecondary} />
             <Text style={styles.previewLabel}>{type === 'audio' ? 'Audio file' : 'Video file'}</Text>
           </View>
         )}
@@ -260,41 +259,36 @@ export default function UploadMetadataScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   safe:               { flex: 1, backgroundColor: colors.background },
   container:          { padding: spacing.md, paddingBottom: spacing.xxl },
-  back:               { marginBottom: spacing.md },
-  backText:           { ...typography.body, color: colors.textSecondary },
-  heading:            { ...typography.heading2, color: colors.text, marginBottom: spacing.md },
   preview:            { width: '100%', height: 200, borderRadius: 12, marginBottom: spacing.md },
   previewPlaceholder: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
   previewLabel:       { ...typography.caption, color: colors.textSecondary },
   errorText:          { ...typography.bodySmall, color: colors.red, marginBottom: spacing.sm, textAlign: 'center' },
   fieldLabel:         { ...typography.label, color: colors.textSecondary, marginBottom: spacing.xs, marginTop: spacing.sm },
-  taskBonus:          { color: colors.primary },
-  selector:           { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.md, height: 52, marginBottom: spacing.xs },
+  taskBonus:          { color: colors.text },
+  selector:           { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 8, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.md, height: 52, marginBottom: spacing.xs },
   selectorActive:     { borderColor: colors.primary, backgroundColor: colors.primaryDim },
   selectorText:       { ...typography.body, color: colors.text, flex: 1 },
   selectorPlaceholder:{ ...typography.body, color: colors.textTertiary, flex: 1 },
   selectorArrow:      { fontSize: 20, color: colors.textTertiary },
-  textArea:           { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.text, paddingHorizontal: spacing.md, paddingTop: spacing.sm, ...typography.body, minHeight: 80, textAlignVertical: 'top' },
+  textArea:           { backgroundColor: colors.surface, borderRadius: 8, borderWidth: 1, borderColor: colors.border, color: colors.text, paddingHorizontal: spacing.md, paddingTop: spacing.sm, ...typography.body, minHeight: 80, textAlignVertical: 'top' },
   charCount:          { ...typography.caption, color: colors.textTertiary, textAlign: 'right', marginBottom: spacing.sm },
   cta:                { marginTop: spacing.lg },
   hint:               { ...typography.caption, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.md, lineHeight: 18 },
   centeredScreen:     { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  successEmoji:       { fontSize: 64, marginBottom: spacing.lg },
-  successTitle:       { ...typography.heading2, color: colors.text, marginBottom: spacing.sm },
+  successTitle:       { ...typography.heading2, color: colors.text, marginBottom: spacing.sm, marginTop: spacing.lg },
   successSub:         { ...typography.body, color: colors.textSecondary, textAlign: 'center', lineHeight: 24, marginBottom: spacing.xl },
   successBtn:         { width: '100%', marginBottom: spacing.sm },
-  uploadingEmoji:     { fontSize: 48, marginBottom: spacing.md },
-  uploadingTitle:     { ...typography.heading2, color: colors.text, marginBottom: spacing.xs },
-  uploadingPct:       { ...typography.heading1, color: colors.primary, marginBottom: spacing.lg },
+  uploadingTitle:     { ...typography.heading2, color: colors.text, marginBottom: spacing.xs, marginTop: spacing.md },
+  uploadingPct:       { ...typography.heading1, color: colors.text, marginBottom: spacing.lg },
   progressTrack:      { width: '100%', height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden', marginBottom: spacing.md },
-  progressFill:       { height: '100%', backgroundColor: colors.primary, borderRadius: 4 },
+  progressFill:       { height: '100%', backgroundColor: colors.ctaBackground, borderRadius: 4 },
   uploadingHint:      { ...typography.caption, color: colors.textTertiary },
   modalOverlay:       { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
   modalSheet:         { backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: spacing.lg, maxHeight: '70%' },
   modalTitle:         { ...typography.heading3, color: colors.text, marginBottom: spacing.md },
   modalRow:           { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
   modalRowText:       { ...typography.body, color: colors.text },
-  modalRowTextActive: { color: colors.primary, fontWeight: '600' },
-  modalRowSub:        { ...typography.caption, color: colors.primary, marginTop: 2 },
-  modalCheck:         { color: colors.primary, fontWeight: '700', fontSize: 16 },
+  modalRowTextActive: { color: colors.text, fontWeight: '600' },
+  modalRowSub:        { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+  modalRowSubActive:  { color: colors.textSecondary },
 });

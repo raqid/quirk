@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import Button from '../components/Button';
+import { Icon } from '../utils/icons';
 import { useAuthContext } from '../context/AuthContext';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
@@ -10,19 +11,19 @@ const { width } = Dimensions.get('window');
 
 const PAGES = [
   {
-    icon: '📷',
+    icon: 'camera',
     title: 'Upload & Earn',
     body: 'Capture photos, videos, and audio that AI companies need. Every approved upload earns you an upfront payment.',
   },
   {
-    icon: '✓',
+    icon: 'checkCircle',
     title: 'Complete Tasks',
     body: 'Earn more by completing specific tasks — things companies need urgently. Higher pay, faster approval.',
   },
   {
-    icon: '$',
+    icon: 'coins',
     title: 'Earn Royalties Forever',
-    body: 'Every time a company uses your data in a training run, you earn a royalty. Passive income that compounds over time.',
+    body: 'Every time a company uses your data in a training run, you earn a royalty. e.g., A company licenses a dataset with your photos → you earn $0.02–$0.50 per use, every time. On top of the upfront payment you already received.',
   },
 ];
 
@@ -62,7 +63,7 @@ export default function OnboardingTutorial({ navigation }) {
         >
           {PAGES.map((p, i) => (
             <View key={i} style={[styles.page, { width }]}>
-              <Text style={styles.pageIcon}>{p.icon}</Text>
+              <Icon name={p.icon} size={64} color={colors.text} style={styles.pageIcon} />
               <Text style={styles.pageTitle}>{p.title}</Text>
               <Text style={styles.pageBody}>{p.body}</Text>
             </View>
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   skipText: { ...typography.body, color: colors.textSecondary },
   scroll: { flex: 1 },
   page: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl },
-  pageIcon: { fontSize: 64, marginBottom: spacing.lg },
+  pageIcon: { marginBottom: spacing.lg },
   pageTitle: { ...typography.heading2, color: colors.text, marginBottom: spacing.md, textAlign: 'center' },
   pageBody: { ...typography.body, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: spacing.lg },
