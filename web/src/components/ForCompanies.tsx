@@ -17,7 +17,7 @@ export default function ForCompanies() {
           diverse, ethical, real-world training data
         </h2>
         <p
-          className="text-[15px] leading-[1.9] mb-6"
+          className="text-[15px] leading-[1.9] mb-10"
           style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
         >
           stop scraping the web and hoping for the best. Quirk gives you custom datasets
@@ -25,7 +25,7 @@ export default function ForCompanies() {
           contributors who consent and get compensated.
         </p>
         <p
-          className="text-[15px] leading-[1.9] mb-12"
+          className="text-[15px] leading-[1.9] mb-20"
           style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
         >
           every submission is quality-scored, geographically tagged, and linked to a
@@ -36,7 +36,7 @@ export default function ForCompanies() {
         </p>
 
         <a
-          href="/enterprise"
+          href="/waitlist"
           className="inline-flex items-center h-12 px-7 rounded-full text-[13px] tracking-[0.1em] uppercase cursor-pointer transition-all"
           style={{
             background: "var(--color-olive-dim)",

@@ -17,19 +17,13 @@ export default function ForContributors() {
           build a portfolio that earns while you sleep
         </h2>
         <p
-          className="text-[15px] leading-[1.9] mb-6"
+          className="text-[15px] leading-[1.9]"
           style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
         >
           unlike one-time gigs, Quirk&apos;s royalty system means your past submissions
           keep generating income. every approved photo, video, or audio clip enters
           your royalty portfolio. each time an AI company licenses a dataset containing
-          your work, you earn.
-        </p>
-        <p
-          className="text-[15px] leading-[1.9]"
-          style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-sans)", fontWeight: 300 }}
-        >
-          contributors earn an average of{" "}
+          your work, you earn. contributors earn an average of{" "}
           <strong style={{ fontWeight: 400, color: "var(--color-olive)" }}>$127/month</strong>.
           reach Gold tier and unlock a{" "}
           <strong style={{ fontWeight: 400, color: "var(--color-olive)" }}>3x royalty multiplier</strong>{" "}

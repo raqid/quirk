@@ -7,13 +7,9 @@
   --color-olive-dim: rgba(139, 154, 91, 0.15);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ul, ol {
-  margin: 0;
-}
+/* Tailwind v4 preflight already handles box-sizing and margin resets.
+   Duplicate unlayered rules here were overriding Tailwind utility classes
+   like mb-*, mt-*, etc. because unlayered CSS beats @layer utilities. */
 
 html {
   background: #0a0a0a;
