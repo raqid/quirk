@@ -33,12 +33,7 @@ export default function TopNav() {
       }}
     >
       <Link href="/app" className="no-underline flex items-center gap-2">
-        <span
-          className="text-[22px]"
-          style={{ fontFamily: 'var(--font-serif)', fontWeight: 300, color: 'rgba(255,255,255,0.7)' }}
-        >
-          Quirk
-        </span>
+        <img src="/logo.png" alt="Quirk" className="h-7 w-7 rounded-full" style={{ opacity: 0.8 }} />
       </Link>
 
       <div className="flex items-center gap-1">

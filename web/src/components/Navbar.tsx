@@ -4,12 +4,7 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-6 sm:px-10 py-6">
       <div className="flex items-center justify-between">
-        <p
-          className="text-[14px] tracking-[0.15em] uppercase"
-          style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-sans)", fontWeight: 400 }}
-        >
-          Quirk
-        </p>
+        <img src="/logo.png" alt="Quirk" className="h-8 w-8 rounded-full" style={{ opacity: 0.8 }} />
         <a
           href="/login"
           className="text-[12px] tracking-[0.12em] uppercase px-5 py-2.5 rounded-full transition-colors"

@@ -30,12 +30,9 @@ function LoginInner() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#0A0A0A' }}>
       <div className="w-[400px] text-center">
-        <h1
-          className="text-[42px] mb-4"
-          style={{ fontFamily: 'var(--font-serif)', fontWeight: 300, color: 'rgba(255,255,255,0.8)' }}
-        >
-          Quirk
-        </h1>
+        <div className="flex justify-center mb-4">
+          <img src="/logo.png" alt="Quirk" className="h-20 w-20 rounded-full" style={{ opacity: 0.8 }} />
+        </div>
         <p
           className="text-[14px] mb-14"
           style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-sans)', fontWeight: 300 }}
