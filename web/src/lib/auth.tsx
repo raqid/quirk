@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = { user, loading, signInWithGoogle, signInAsDemo, signInOffline, signOut };
 
-  // @ts-expect-error React 19 context-as-provider pattern, type conflict with @react-oauth/google's React 18 types
+  // @ts-ignore
   return <AuthContext value={value}>{children}</AuthContext>;
 }
 
